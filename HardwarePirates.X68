@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
-* Title      : Final Prject
-* Written by : Anna Jennings
+* Title      : Final Project
+* Written by : Anna Jennings, <add your name>
 * Date       :
 * Description:
 *-----------------------------------------------------------
