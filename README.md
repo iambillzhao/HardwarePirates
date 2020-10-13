@@ -1,6 +1,6 @@
 # HardwarePirates
 
-# Authors
+# Please add your name to `HardwarePirates.X68`
 Bill
 Anna
 Lawrence
