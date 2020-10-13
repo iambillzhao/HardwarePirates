@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      : Final Project
-* Written by : Anna Jennings, <add your name>
+* Written by : Anna Jennings, Bill Zhao, <add your name>
 * Date       :
 * Description:
 *-----------------------------------------------------------
