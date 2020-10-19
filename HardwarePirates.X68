@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      : Final Project
-* Written by : Anna Jennings, Bill Zhao, Lawrence Fiesta, <add your name>
+* Written by : Anna Jennings, Bill Zhao, Lawrence Fiesta, Lexun Chi
 * Date       :
 * Description:
 *-----------------------------------------------------------
@@ -14,6 +14,7 @@ START:                  ; first instruction of program
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~
