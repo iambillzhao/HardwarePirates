@@ -2,13 +2,13 @@
 
 ## Overview
 
-Disassembler, add details
+CSS 422 Final Project
 
 ## Workflow
 
 ### Getting Started
 
-1. Checkout the master branch using `git checkout master`.
+1. Checkout the main branch using `git checkout main`.
 
 2. Create a new branch using `git checkout -b <new_name>`. Example: `iambillzhao/start`.
 
@@ -16,7 +16,7 @@ Disassembler, add details
 
 ### Making a Pull Request
 
-1. Merge changes from the master branch to your new branch using `git merge master`.
+1. Merge changes from the main branch to your new branch using `git merge main`.
 
 2. Head to this [repository](https://github.com/iambillzhao/Movie-Store) and go to the tab named "Pull Requests".
 
