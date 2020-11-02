@@ -10,7 +10,7 @@ Disassembler, add details
 
 1. Checkout the master branch using `git checkout master`.
 
-2. Create a new branch using `git checkout -b <new_name>`. Example: 'iambillzhao/start'.
+2. Create a new branch using `git checkout -b <new_name>`. Example: `iambillzhao/start`.
 
 3. Push the new branch to GitHub using `git push --set-upstrea, origin <new_name>`.
 
