@@ -77,7 +77,7 @@ MOVE_Dest_Reg       CLR         D4
 
 *------------------------------------------------------------
 
-*----------------------  Functions  --------------------------
+*----------------------  MOVE: Functions  --------------------
 MOVE_Byte           LEA         MOVE_Output_Byte,A1     ;Display '.B' for MOVE size
                     MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
                     TRAP        #15                     ;task 15 for output
