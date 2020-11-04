@@ -52,7 +52,7 @@ MOVE_Dest_Reg       CLR         D4
                     LSR.L       #6,D4
                     ADD.L       D4,D5                   ;combining the Source data together
 
-*----------------------  Get Source  -------------------------                    
+*----------------------  MOVE: Get Source  -------------------
                     CLR         D4
                     MOVE.L      A0,D4
                     AND.L       #%0000000000111111,D4   ;clearing all bits except Source Mode,and Register
