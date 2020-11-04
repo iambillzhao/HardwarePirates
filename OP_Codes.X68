@@ -20,7 +20,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ;Display 'MOVE'
                     TRAP        #15                     ;task 15 for output
                     
                     
-*----------------------  Get Size  --------------------------
+*----------------------  MOVE: Get Size  --------------------
                     MOVE.L      A0,D4                   ;move the data from A0 (the instruction) and load it into D4 to be worked on               
                     AND.L       #%0011000000000000,D4   ;clear all bits except the size     
                     LSR.L       #8,D4                   ;access the size element of the instruction, do this by shifting the number the right 12 bits                    
@@ -111,4 +111,3 @@ Invalid_Instruction
 EA_MOVE 
     
                     END    START        ; last line of source
-
