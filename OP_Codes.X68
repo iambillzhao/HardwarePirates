@@ -56,7 +56,7 @@ MOVE_Dest_Reg       CLR         D4
                     CLR         D4
                     MOVE.L      A0,D4
                     AND.L       #%0000000000111111,D4   ;clearing all bits except Source Mode,and Register
-*----------------------  Send to EA  -------------------------
+*----------------------  MOVE: Send to EA  -------------------
 
                     BRA         EA_MOVE                 ;send to the EA with D4 holding the Destination and D5 holding Source  
 
