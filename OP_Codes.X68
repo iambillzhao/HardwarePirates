@@ -39,7 +39,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ;Display 'MOVE'
                     
                     BRA         Invalid_Instruction     ;branches if the size data isn't properly formatted
 
-*----------------------  Get Destination  --------------------                    
+*----------------------  MOVE: Get Destination  --------------
 MOVE_Dest_Reg       CLR         D4
                     MOVE.L      A0,D4                   ;move the data from A0 (the instruction) and load it into D4 to be worked on               
                     AND.L       #%0000111000000000,D4   ;clear all bits except the Destination Register                     
