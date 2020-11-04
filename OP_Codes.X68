@@ -14,7 +14,7 @@ START:              ORG    $1000                         ; first instruction of 
                     MOVE.L      #%0010010111111000,A0   ;Testing info
 
 
-*----------------------  Display MOVE -----------------------
+*----------------------  MOVE: Display MOVE -----------------
 OP_MOVE             LEA         MOVE_Output,A1          ;Display 'MOVE' 
                     MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
                     TRAP        #15                     ;task 15 for output
