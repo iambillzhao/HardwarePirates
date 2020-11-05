@@ -5,6 +5,7 @@
 *-----------------------------------------------------------
 START:              ORG    $1000                         ; first instruction of program
 
+
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
@@ -67,9 +68,29 @@ MOVE_Dest_Reg       CLR         D4
 *-----------------------------------------------------------------
 
 
+*-------------------------  NOP  --------------------------
+* Written by :  Lucy Chi
+* Date       :  11/04/2020
+* Description:  Op-code: NOP
+*-----------------------------------------------------------  
 
+                    MOVE.L      #%0100111001110001,A0   ;Testing info
+ 
 
-
+*-------------------------  Display NOP  ---------------------------------
+OP_NOP              LEA         NOP_Output,A1           ;Display 'OP' 
+                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
+                    TRAP        #15                     ;task 15 for output
+                    
+                    LEA         Next_Line,A1            ;Go to next line
+                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
+                    TRAP        #15                     ;task 15 for output
+                    
+*----------------------  End of NOP  ----------------------------
+*Performs no operation
+*-----------------------------------------------------------------
+          
+                       
 
 *---------------------  Next OP-Code  -----------------------
 
@@ -77,7 +98,7 @@ MOVE_Dest_Reg       CLR         D4
 
 *------------------------------------------------------------
 
-*----------------------  Functions  --------------------------
+  *----------------------  Functions  --------------------------
 MOVE_Byte           LEA         MOVE_Output_Byte,A1     ;Display '.B' for MOVE size
                     MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
                     TRAP        #15                     ;task 15 for output
@@ -95,15 +116,24 @@ MOVE_Long           LEA         MOVE_Output_Long,A1     ;Display '.L' for MOVE s
                     TRAP        #15                     ;task 15 for output
 
                     BRA         MOVE_Dest_Reg           ;return to code
-                    
+                  
 
                     SIMHALT             ; halt simulator
+                    
+                    
+*--------------------- EQUs ----------------------------------------
+CR              EQU     $0D                 
+LF              EQU     $0A 
 
 
+*--------------------- Constants and variables ---------------------
 MOVE_Output         DC.W        'MOVE',0
 MOVE_Output_Byte    DC.W        '.B     ',0
 MOVE_Output_Word    DC.W        '.W     ',0
 MOVE_Output_Long    DC.W        '.L     ',0
+NOP_Output          DC.W        'NOP',0
+
+Next_Line           DC.W        CR,LF,0
 
 EA_Source            
 EA_Destination
@@ -112,3 +142,9 @@ EA_MOVE
     
                     END    START        ; last line of source
 
+
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
