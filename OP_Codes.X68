@@ -5,6 +5,7 @@
 *-----------------------------------------------------------
 START:              ORG    $1000                         ; first instruction of program
 
+
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
@@ -27,7 +28,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     LSR.L       #4,D4
                     
                                    
-
+                                   
                     CMP.B       #%01,D4                 ; checking if the size is byte
                     BEQ         MOVE_Byte               ; branch to the byte condition
 
@@ -44,10 +45,12 @@ MOVE_Dest_Reg       CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
                     AND.L       #%0000111000000000,D4   ; clear all bits except the Destination Register                     
                     LSR.L       #6,D4                   ; access the destination register
+
                     MOVE.W      D4,D5
                     
                     CLR         D4
                     MOVE.L      A0,D4
+
                     AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
                     LSR.L       #6,D4
                     ADD.L       D4,D5                   ; combining the Source data together
@@ -80,11 +83,35 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
 
                     BRA         MOVE_Dest_Reg           ; return to code
                     
+
 *----------------------  End of MOVE  ----------------------------
 *Move and its size have been printed
 *D4,D5 are loaded with EA and ready to be analyzed
 *-----------------------------------------------------------------
 
+
+*-------------------------  NOP  --------------------------
+* Written by :  Lucy Chi
+* Date       :  11/04/2020
+* Description:  Op-code: NOP
+*-----------------------------------------------------------  
+
+                    MOVE.L      #%0100111001110001,A0   ; Testing info
+ 
+
+*-------------------------  Display NOP  ---------------------------------
+OP_NOP              LEA         NOP_Output,A1           ; Display 'OP' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    LEA         Next_Line,A1            ; Go to next line
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+*----------------------  End of NOP  ----------------------------
+*Performs no operation
+*-----------------------------------------------------------------
+                    
 
 *------------------------  LEA  ----------------------------------
 * Written by :  Anna Jennings
@@ -104,6 +131,11 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
 
                     SIMHALT                             ; halt simulator
                     
+*--------------------- EQUs ----------------------------------------
+
+CR              EQU     $0D                 
+LF              EQU     $0A 
+                  
                     
 *---------------------  Global Variables and Functions -----------------------------------                    
 
@@ -112,6 +144,9 @@ MOVE_Output         DC.W        'MOVE',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
+NOP_Output          DC.W        'NOP',0
+
+Next_Line           DC.W        CR,LF,0
  
 
 Invalid_Instruction 
@@ -121,6 +156,7 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~
