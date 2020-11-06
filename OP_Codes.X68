@@ -74,17 +74,17 @@ MOVE_Dest_Reg       CLR         D4
 * Description:  Op-code: NOP
 *-----------------------------------------------------------  
 
-                    MOVE.L      #%0100111001110001,A0   ;Testing info
+                    MOVE.L      #%0100111001110001,A0   ; Testing info
  
 
 *-------------------------  Display NOP  ---------------------------------
-OP_NOP              LEA         NOP_Output,A1           ;Display 'OP' 
-                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
-                    TRAP        #15                     ;task 15 for output
+OP_NOP              LEA         NOP_Output,A1           ; Display 'OP' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
                     
-                    LEA         Next_Line,A1            ;Go to next line
-                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
-                    TRAP        #15                     ;task 15 for output
+                    LEA         Next_Line,A1            ; Go to next line
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
                     
 *----------------------  End of NOP  ----------------------------
 *Performs no operation
@@ -141,7 +141,6 @@ Invalid_Instruction
 EA_MOVE 
     
                     END    START        ; last line of source
-
 
 
 *~Font name~Courier New~
