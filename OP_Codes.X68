@@ -117,29 +117,6 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'OP'
 
 *---------------------  Next OP-Code  -----------------------
 
-
-
-*------------------------------------------------------------
-
-  *----------------------  Functions  --------------------------
-MOVE_Byte           LEA         MOVE_Output_Byte,A1     ;Display '.B' for MOVE size
-                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
-                    TRAP        #15                     ;task 15 for output
-
-                    BRA         MOVE_Dest_Reg           ;return to code
-                    
-MOVE_Word           LEA         MOVE_Output_Word,A1     ;Display '.W' for MOVE size
-                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
-                    TRAP        #15                     ;task 15 for output
-                   
-                    BRA         MOVE_Dest_Reg           ;return to code
- 
-MOVE_Long           LEA         MOVE_Output_Long,A1     ;Display '.L' for MOVE size
-                    MOVE.B      #14,D0                  ;trap task 14 is loaded into D0
-                    TRAP        #15                     ;task 15 for output
-
-                    BRA         MOVE_Dest_Reg           ;return to code
-                  
                     
 
 *------------------------  LEA  ----------------------------------
