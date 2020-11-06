@@ -140,31 +140,7 @@ MOVE_Long           LEA         MOVE_Output_Long,A1     ;Display '.L' for MOVE s
 
                     BRA         MOVE_Dest_Reg           ;return to code
                   
-
-                    SIMHALT             ; halt simulator
                     
-                    
-*--------------------- EQUs ----------------------------------------
-CR              EQU     $0D                 
-LF              EQU     $0A 
-
-
-*--------------------- Constants and variables ---------------------
-MOVE_Output         DC.W        'MOVE',0
-MOVE_Output_Byte    DC.W        '.B     ',0
-MOVE_Output_Word    DC.W        '.W     ',0
-MOVE_Output_Long    DC.W        '.L     ',0
-NOP_Output          DC.W        'NOP',0
-
-Next_Line           DC.W        CR,LF,0
-
-EA_Source            
-EA_Destination
-Invalid_Instruction
-EA_MOVE 
-    
-                    END    START        ; last line of source
-
 
 *------------------------  LEA  ----------------------------------
 * Written by :  Anna Jennings
@@ -184,6 +160,11 @@ EA_MOVE
 
                     SIMHALT                             ; halt simulator
                     
+*--------------------- EQUs ----------------------------------------
+
+CR              EQU     $0D                 
+LF              EQU     $0A 
+                  
                     
 *---------------------  Global Variables and Functions -----------------------------------                    
 
@@ -192,6 +173,9 @@ MOVE_Output         DC.W        'MOVE',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
+NOP_Output          DC.W        'NOP',0
+
+Next_Line           DC.W        CR,LF,0
  
 
 Invalid_Instruction 
