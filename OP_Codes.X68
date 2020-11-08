@@ -100,7 +100,7 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
  
 
 *-------------------------  Display NOP  ---------------------------------
-OP_NOP              LEA         NOP_Output,A1           ; Display 'OP' 
+OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
@@ -111,6 +111,32 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'OP'
 *----------------------  End of NOP  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
+
+*-------------------------  RTS  --------------------------
+* Written by :  Lucy Chi
+* Date       :  11/07/2020
+* Description:  Op-code: RTS
+*-----------------------------------------------------------  
+
+                    MOVE.L      #%0100111001110101,A0    ; Testing info 
+ 
+
+*-------------------------  Display RTS  ---------------------------------
+OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    LEA         Next_Line,A1            ; Go to next line
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    RTS                                 ; return 
+                    
+*----------------------  End of RTS  ----------------------------
+*Performs no operation
+*-----------------------------------------------------------------
+                   
+                    
                     
 
 *------------------------  LEA  ----------------------------------
@@ -145,6 +171,7 @@ Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
 NOP_Output          DC.W        'NOP',0
+RTS_Output          DC.W        'RTS',0
 
 Next_Line           DC.W        CR,LF,0
  
@@ -156,6 +183,7 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 *~Font name~Courier New~
