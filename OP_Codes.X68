@@ -190,6 +190,70 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
 
 
 
+
+*------------------------  Branch Group  -------------------
+* Written by :  Anna Jennings
+* Date       :  11/16/2020
+* Description:  Prints BRA, BCC, BLT, BGE, or BEQ
+*-----------------------------------------------------------
+
+                    MOVE.L      #%0110110011111000,A0   ; Testing info
+                
+*--------------- Branch: Get Branch Type  -----------------           
+
+OP_Branch           MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
+                    AND.L       #%0000111100000000,D4   ; Isolate Branch type 
+                    LSR.L       #8,D4                   ; rotate bits to isolate branch type in msb
+
+*---------------  Branch: Display Type  -------------------
+                
+                    CMP.L       #%0000000000000000,D4   ; checking if BRA
+                    BEQ         BRA_Message             ; branch to print out BRA
+                
+                    CMP.L       #%0000000000001101,D4   ; checking if BLT
+                    BEQ         BLT_Message             ; branch to print out BLT
+                
+                    CMP.L       #%0000000000001100,D4   ; checking if BGE
+                    BEQ         BGE_Message             ; branch to print out BGE
+                
+                    CMP.L       #%0000000000000111,D4   ; checking if BEQ
+                    BEQ         BEQ_Message             ; branch to print out BEQ
+                
+                    BRA         Invalid_Instruction     ; branch if invalid instruction
+                
+*---------------  Branch: Functions  ---------------------
+BRA_Message         LEA         BRA_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    BRA         EA_Branch               ; finish op-code
+                
+BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    BRA         EA_Branch               ; finish op-code   
+
+BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    BRA         EA_Branch               ; finish op-code    
+
+BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    BRA         EA_Branch               ; finish op-code
+                    
+                
+*------------------ End of Branch  -------------------------
+*The branch condition has been printed to the screen
+*no remaining data is stored
+*-----------------------------------------------------------
+
+
+
 *---------------------  Next OP-Code  -----------------------
 
 
@@ -199,8 +263,8 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     
 *--------------------- EQUs ----------------------------------------
 
-CR              EQU     $0D                 
-LF              EQU     $0A 
+CR                  EQU     $0D                 
+LF                  EQU     $0A 
                   
                     
 *---------------------  Global Variables and Functions -----------------------------------                    
@@ -209,14 +273,20 @@ Invalid_Ins_Output  DC.W        'Invalid Instruction',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
-MOVE_Output         DC.W        'MOVE',0
-NOP_Output          DC.W        'NOP',0
-LEA_Output          DC.W        'LEA',0
+MOVE_Output         DC.W        'MOVE ',0
+NOP_Output          DC.W        'NOP  ',0
+RTS_Output          DC.W        'RTS  ',0
+LEA_Output          DC.W        'LEA  ',0
+BRA_Output          DC.W        'BRA  ',0
+BLT_Output          DC.W        'BLT  ',0
+BGE_Output          DC.W        'BGE  ',0
+BEQ_Output          DC.W        'BEQ  ',0
 Next_Line           DC.W        CR,LF,0
 
 
 EA_MOVE
 EA_LEA 
+EA_Branch
 
 Invalid_Instruction 
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
@@ -225,6 +295,7 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 
