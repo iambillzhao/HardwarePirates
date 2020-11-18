@@ -69,7 +69,8 @@ MOVE_Byte           LEA         Output_Byte,A1          ; Display '.B' for MOVE 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
 
-                    BRA         Dest_Reg                ; return to code
+                    BRA         MOVE_Dest_Reg           ; return to code
+
                     
 MOVE_Word           LEA         Output_Word,A1          ; Display '.W' for MOVE size
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
@@ -88,6 +89,7 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
 *Move and its size have been printed
 *D4,D5 are loaded with EA and ready to be analyzed
 *-----------------------------------------------------------------
+
 
 
 *-------------------------  NOP  --------------------------
@@ -112,6 +114,8 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
 *Performs no operation
 *-----------------------------------------------------------------
 
+
+
 *-------------------------  RTS  --------------------------
 * Written by :  Lucy Chi
 * Date       :  11/07/2020
@@ -135,9 +139,8 @@ OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS'
 *----------------------  End of RTS  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
-                   
-                    
-                    
+
+
 
 *------------------------  LEA  ----------------------------------
 * Written by :  Anna Jennings
@@ -145,7 +148,45 @@ OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS'
 * Description:  Prints the LEA EA
 *-----------------------------------------------------------------
 
+                    MOVE.L      #%0100010111010111,A0   ; Testing Info
 
+*------------------------  LEA: Diplay LEA  ----------------------
+OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
+                    MOVE.B      #14,D0                  ; trap rask 14 is loaded int D0
+                    TRAP        #15                     ; trap 15 is for output
+                      
+                      
+*------------------------  LEA: Get Register  --------------------                      
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0000111000000000,D4   ; clear all bits except the register     
+                    LSR.L       #8,D4                   ; access the size element of the instruction, do this by shifting the number the right 9 bits 
+                    LSR.L       #1,D4
+                    
+                    CMP.B       #8,D4                   ; checking to make sure the register number is less than 8, and greater than 0
+                    BGE         Invalid_Instruction     ; branch if greater than or equal to 8
+                    CMP.B       #0,D4
+                    BLT         Invalid_Instruction     ; branch if less than 0
+                    
+                    MOVE.L      D4,D5                   ; copying the register number into D5
+                    CLR         D4
+                    
+*-----------------------  LEA: Get Effective Address  -------------
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on  
+                    AND.L       #%0000000000111111,D4   ; clearing all bits to isolate the effective address
+                    MOVE.L      D4,D6                   ; copying the Effective address to D6
+                    CLR         D4                      ; Clear register D4
+
+
+*----------------------  LEA: Send to EA  --------------------------
+                    BRA         EA_LEA                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
+                    
+                    
+                    
+*---------------------  End of LEA  --------------------------------
+*LEA has been printed 
+*D5 holds the register number
+*D6 holds the effective address (mode,register)
+*-------------------------------------------------------------------       
 
 
 
@@ -153,7 +194,6 @@ OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS'
 
 
 
-*------------------------------------------------------------                    
 
                     SIMHALT                             ; halt simulator
                     
@@ -166,15 +206,17 @@ LF              EQU     $0A
 *---------------------  Global Variables and Functions -----------------------------------                    
 
 Invalid_Ins_Output  DC.W        'Invalid Instruction',0
-MOVE_Output         DC.W        'MOVE',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
+MOVE_Output         DC.W        'MOVE',0
 NOP_Output          DC.W        'NOP',0
-RTS_Output          DC.W        'RTS',0
-
+LEA_Output          DC.W        'LEA',0
 Next_Line           DC.W        CR,LF,0
- 
+
+
+EA_MOVE
+EA_LEA 
 
 Invalid_Instruction 
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
