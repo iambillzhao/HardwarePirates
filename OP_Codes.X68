@@ -70,6 +70,7 @@ MOVE_Byte           LEA         Output_Byte,A1          ; Display '.B' for MOVE 
                     TRAP        #15                     ; task 15 for output
 
                     BRA         MOVE_Dest_Reg           ; return to code
+
                     
 MOVE_Word           LEA         Output_Word,A1          ; Display '.W' for MOVE size
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
@@ -91,7 +92,6 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
 
 
 
-
 *-------------------------  NOP  --------------------------
 * Written by :  Lucy Chi
 * Date       :  11/04/2020
@@ -102,7 +102,7 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
  
 
 *-------------------------  Display NOP  ---------------------------------
-OP_NOP              LEA         NOP_Output,A1           ; Display 'OP' 
+OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
@@ -113,9 +113,34 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'OP'
 *----------------------  End of NOP  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
-  
 
-                  
+
+
+*-------------------------  RTS  --------------------------
+* Written by :  Lucy Chi
+* Date       :  11/07/2020
+* Description:  Op-code: RTS
+*-----------------------------------------------------------  
+
+                    MOVE.L      #%0100111001110101,A0    ; Testing info 
+ 
+
+*-------------------------  Display RTS  ---------------------------------
+OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    LEA         Next_Line,A1            ; Go to next line
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    RTS                                 ; return 
+                    
+*----------------------  End of RTS  ----------------------------
+*Performs no operation
+*-----------------------------------------------------------------
+
+
 
 *------------------------  LEA  ----------------------------------
 * Written by :  Anna Jennings
@@ -165,12 +190,10 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
 
 
 
-
 *---------------------  Next OP-Code  -----------------------
 
 
 
-                   
 
                     SIMHALT                             ; halt simulator
                     
