@@ -6,13 +6,16 @@
 START:              ORG    $1000                         ; first instruction of program
 
 
+
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
 * Description:  Prints the MOVE EA
 *-----------------------------------------------------------                   
 
-                    MOVE.L      #%0010010111111000,A0   ; Testing info
+                    *MOVE.L      #%0010010111111000,A0   ; Testing info
+                    *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
+                    MOVE.L      #%0010001001001010,A0   ; Testing info EA: A1,A2 (destination register 1, mode A) (source register 2, A)
 
 
 *----------------------  MOVE: Display MOVE -----------------
@@ -26,8 +29,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     AND.L       #%0011000000000000,D4   ; clear all bits except the size     
                     LSR.L       #8,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                    
                     LSR.L       #4,D4
-                    
-                                   
+                                                       
                                    
                     CMP.B       #%01,D4                 ; checking if the size is byte
                     BEQ         MOVE_Byte               ; branch to the byte condition
@@ -43,25 +45,36 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
 *----------------------  MOVE: Get Destination  --------------
 MOVE_Dest_Reg       CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
-                    AND.L       #%0000111000000000,D4   ; clear all bits except the Destination Register                     
-                    LSR.L       #6,D4                   ; access the destination register
+                    AND.L       #%0000111000000000,D4   ; clear all bits except the Destination Register 
+                    MOVE.L      #9,D1                    
+                    LSR.L       D1,D4                   ; access the destination register
 
-                    MOVE.W      D4,D5
+                    MOVE.W      D4,D5                   ; stores destination register in D5
                     
                     CLR         D4
                     MOVE.L      A0,D4
 
                     AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
-                    LSR.L       #6,D4
-                    ADD.L       D4,D5                   ; combining the Source data together
+                    LSR.L       #6,D4                   ; stores destination mode in D4
 
+                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
+
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
 *----------------------  MOVE: Get Source  -------------------
                     CLR         D4
                     MOVE.L      A0,D4
-                    AND.L       #%0000000000111111,D4   ; clearing all bits except Source Mode,and Register
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+                    
+                    
 *----------------------  MOVE: Send to EA  -------------------
 
-                    BRA         EA_MOVE                 ; send to the EA with D4 holding the Destination and D5 holding Source  
+                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
                     
 *----------------------  MOVE: Functions  --------------------
 
@@ -126,7 +139,7 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
  
 
 *-------------------------  Display RTS  ---------------------------------
-OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS' 
+*OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
@@ -190,70 +203,6 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
 
 
 
-
-*------------------------  Branch Group  -------------------
-* Written by :  Anna Jennings
-* Date       :  11/16/2020
-* Description:  Prints BRA, BCC, BLT, BGE, or BEQ
-*-----------------------------------------------------------
-
-                    MOVE.L      #%0110110011111000,A0   ; Testing info
-                
-*--------------- Branch: Get Branch Type  -----------------           
-
-OP_Branch           MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
-                    AND.L       #%0000111100000000,D4   ; Isolate Branch type 
-                    LSR.L       #8,D4                   ; rotate bits to isolate branch type in msb
-
-*---------------  Branch: Display Type  -------------------
-                
-                    CMP.L       #%0000000000000000,D4   ; checking if BRA
-                    BEQ         BRA_Message             ; branch to print out BRA
-                
-                    CMP.L       #%0000000000001101,D4   ; checking if BLT
-                    BEQ         BLT_Message             ; branch to print out BLT
-                
-                    CMP.L       #%0000000000001100,D4   ; checking if BGE
-                    BEQ         BGE_Message             ; branch to print out BGE
-                
-                    CMP.L       #%0000000000000111,D4   ; checking if BEQ
-                    BEQ         BEQ_Message             ; branch to print out BEQ
-                
-                    BRA         Invalid_Instruction     ; branch if invalid instruction
-                
-*---------------  Branch: Functions  ---------------------
-BRA_Message         LEA         BRA_Output,A1           ; loading BRA message into A1
-                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
-                    TRAP        #15                     ; output BRA
-                
-                    BRA         EA_Branch               ; finish op-code
-                
-BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
-                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
-                    TRAP        #15                     ; output BRA
-                
-                    BRA         EA_Branch               ; finish op-code   
-
-BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
-                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
-                    TRAP        #15                     ; output BRA
-                
-                    BRA         EA_Branch               ; finish op-code    
-
-BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
-                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
-                    TRAP        #15                     ; output BRA
-                
-                    BRA         EA_Branch               ; finish op-code
-                    
-                
-*------------------ End of Branch  -------------------------
-*The branch condition has been printed to the screen
-*no remaining data is stored
-*-----------------------------------------------------------
-
-
-
 *---------------------  Next OP-Code  -----------------------
 
 
@@ -263,8 +212,8 @@ BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message in
                     
 *--------------------- EQUs ----------------------------------------
 
-CR                  EQU     $0D                 
-LF                  EQU     $0A 
+CR              EQU     $0D                 
+LF              EQU     $0A 
                   
                     
 *---------------------  Global Variables and Functions -----------------------------------                    
@@ -273,25 +222,26 @@ Invalid_Ins_Output  DC.W        'Invalid Instruction',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
-MOVE_Output         DC.W        'MOVE ',0
-NOP_Output          DC.W        'NOP  ',0
-RTS_Output          DC.W        'RTS  ',0
-LEA_Output          DC.W        'LEA  ',0
-BRA_Output          DC.W        'BRA  ',0
-BLT_Output          DC.W        'BLT  ',0
-BGE_Output          DC.W        'BGE  ',0
-BEQ_Output          DC.W        'BEQ  ',0
+MOVE_Output         DC.W        'MOVE',0
+NOP_Output          DC.W        'NOP',0
+LEA_Output          DC.W        'LEA',0
 Next_Line           DC.W        CR,LF,0
 
+Comma               DC.W        ',',0
 
-EA_MOVE
+
+*EA_MOVE
 EA_LEA 
-EA_Branch
 
 Invalid_Instruction 
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
+                    nop
+                    INCLUDE     'EA_Codes.X68',0
+
+                    
+                    
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
