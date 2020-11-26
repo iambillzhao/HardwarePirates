@@ -292,6 +292,103 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 
 
 *---------------------  Next OP-Code  ------------------------------------------
+*-------------------------------------------------------------------       
+
+
+
+*------------------------  JSR  ----------------------------------
+* Written by :  Anna Jennings
+* Date       :  11/24/2020
+* Description:  Prints JSR EA
+*-----------------------------------------------------------------
+                       
+*----------------------- JSR: Display  ---------------------------
+OP_JSR              LEA         JSR_Output,A1           ; Display 'JSR' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+               
+              
+*-------------------  JSR: Effective Address  --------------------
+                    CLR         D4                      ; Clearing D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000111111,D4   ; clear all bits expect the effective address
+                    
+*-------------------  JSR: Send to EA  ---------------------------                    
+                    JSR         EA_DECODE               ; move to EA with D4 holding the effective address (mode, register)
+
+
+*----------------------  End of JSR  -----------------------------
+*JSR has been printed
+*D4 holds the effective address (mode, register)
+*-----------------------------------------------------------------
+
+
+
+*------------------------  NOT  ----------------------------------
+* Written by :  Anna Jennings
+* Date       :  11/24/2020
+* Description:  Prints NOT EA
+*-----------------------------------------------------------------
+
+                    MOVE.L      #%0100011001001010,A0   ; testing
+                    
+*----------------------  MOVE: Display NOT -----------------
+OP_NOT              LEA         NOT_Output,A1           ; Display 'NOT' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output 
+                   
+*-----------------------  NOT: Get Size  -------------------------
+NOT_OP              MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                                     
+                                   
+                    CMP.B       #%00,D4                 ; checking if the size is byte
+                    BEQ         NOT_Byte                ; branch to the byte condition
+
+                    CMP.B       #%01,D4                 ; checking if the size is Word  
+                    BEQ         NOT_Word                ; branch to Word condition
+
+                    CMP.B       #%10,D4                 ; checking if the size is Long
+                    BEQ         NOT_Long                ; Branch to Long Condition
+                    
+                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted                    
+
+*----------------------  NOT: Effective Address  ----------------
+NOT_Effective_Add   CLR         D4                      ; clearing D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000111111,D4   ; clear all bits except the effective address
+                    
+                    JSR         EA_DECODE               ; send to EA with D4 holding the effective address (mode,register)
+
+
+*-----------------------  NOT: Functions  ------------------------      
+NOT_Byte            LEA         Output_Byte,A1          ; Display '.B' for MOVE size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         NOT_Effective_Add       ; return to code
+
+                    
+NOT_Word            LEA         Output_Word,A1          ; Display '.W' for MOVE size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                   
+                    BRA         NOT_Effective_Add       ; return to code
+ 
+NOT_Long            LEA         Output_Long,A1          ; Display '.L' for MOVE size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         NOT_Effective_Add       ; return to code
+                    
+*----------------------  End of NOT  -----------------------------
+*NOT and size have been printed
+*D4 holds the effective address (mode, register)
+*-----------------------------------------------------------------                    
+
+
+
+*---------------------  Next OP-Code  -----------------------
 
 
 
@@ -314,9 +411,12 @@ MOVE_Output         DC.W        'MOVE',0
 NOP_Output          DC.W        'NOP',0
 LEA_Output          DC.W        'LEA',0
 ADD_Output          DC.W        'ADD',0
+JSR_Output          DC.W        'JSR',0
+NOT_Output          DC.W        'NOT',0
 Next_Line           DC.W        CR,LF,0
 
 Comma               DC.W        ',',0
+
 
 SRC_MODE            DS.W        1                       ; Storage for the source EA mode type
 SRC_REGISTER        DS.W        1                       ; Storage for the source EA register ID  
