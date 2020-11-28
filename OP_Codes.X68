@@ -15,9 +15,9 @@ START:              ORG    $1000                         ; first instruction of 
 
                     *MOVE.L      #%0010010111111000,A0   ; Testing info
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
-                    MOVE.L      #%0010001001001010,A0   ; Testing info EA: A1,A2 (destination register 1, mode A) (source register 2, A)
-
-
+                    MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
+                    *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
+                    *BRA         OP_LEA
 *----------------------  MOVE: Display MOVE -----------------
 OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
@@ -29,8 +29,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     AND.L       #%0011000000000000,D4   ; clear all bits except the size     
                     LSR.L       #8,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                    
                     LSR.L       #4,D4
-                                                       
-                                   
+                                                                                             
                     CMP.B       #%01,D4                 ; checking if the size is byte
                     BEQ         MOVE_Byte               ; branch to the byte condition
 
@@ -42,9 +41,25 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     
                     BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted
 
-*----------------------  MOVE: Get Destination  --------------
 MOVE_Dest_Reg       CLR         D4
-                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+
+*----------------------  MOVE: Get Source  -------------------
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+                    
+                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
+
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
+                    
+*----------------------  MOVE: Get Destination  --------------
+                    CLR         D4
+                    MOVE.L      A0,D4               
                     AND.L       #%0000111000000000,D4   ; clear all bits except the Destination Register 
                     MOVE.L      #9,D1                    
                     LSR.L       D1,D4                   ; access the destination register
@@ -56,22 +71,6 @@ MOVE_Dest_Reg       CLR         D4
 
                     AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
                     LSR.L       #6,D4                   ; stores destination mode in D4
-
-                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
-
-                    LEA         Comma,A1                ; prints a comma
-                    MOVE.B      #14,D0
-                    TRAP        #15
-*----------------------  MOVE: Get Source  -------------------
-                    CLR         D4
-                    MOVE.L      A0,D4
-                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
-                    LSR.L       #3,D4                   ; stores source mode in D4
-
-                    MOVE.L      A0,D5                   
-                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
-                    
-                    
 *----------------------  MOVE: Send to EA  -------------------
 
                     JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
@@ -180,15 +179,35 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     CMP.B       #0,D4
                     BLT         Invalid_Instruction     ; branch if less than 0
                     
-                    MOVE.L      D4,D5                   ; copying the register number into D5
+                    MOVE.L      D4,D7                   ; copying the register number into D5
                     CLR         D4
                     
 *-----------------------  LEA: Get Effective Address  -------------
-                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on  
-                    AND.L       #%0000000000111111,D4   ; clearing all bits to isolate the effective address
-                    MOVE.L      D4,D6                   ; copying the Effective address to D6
-                    CLR         D4                      ; Clear register D4
+                    CLR         D4
+                    MOVE.L      A0,D4
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
 
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+                    
+                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
+                    CLR         D4
+                    CLR         D5
+
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
+
+                    MOVE.L      #1,D4                   ; sets the mode to 001
+                    MOVE.L      D7,D5                   ; moves the registration bits to D5
+                    CLR         D7
+                    JSR         EA_DECODE                    
+                    
+                    *MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on  
+                    *AND.L       #%0000000000111111,D4   ; clearing all bits to isolate the effective address
+                    *MOVE.L      D4,D6                   ; copying the Effective address to D6
+                    *CLR         D4                      ; Clear register D4
 
 *----------------------  LEA: Send to EA  --------------------------
                     BRA         EA_LEA                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
@@ -199,7 +218,7 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
 *LEA has been printed 
 *D5 holds the register number
 *D6 holds the effective address (mode,register)
-*------------------------------------------------------------------- 
+*-------------------------------------------------------------------       
 
 
 *------------------------  ADD  ----------------------------------
@@ -409,7 +428,7 @@ Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
 MOVE_Output         DC.W        'MOVE',0
 NOP_Output          DC.W        'NOP',0
-LEA_Output          DC.W        'LEA',0
+LEA_Output          DC.W        'LEA     ',0
 ADD_Output          DC.W        'ADD',0
 JSR_Output          DC.W        'JSR',0
 NOT_Output          DC.W        'NOT',0
@@ -440,6 +459,7 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 
