@@ -15,8 +15,9 @@ START:              ORG    $1000                         ; first instruction of 
 
                     *MOVE.L      #%0010010111111000,A0   ; Testing info
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
-                    MOVE.L      #%0010001001001010,A0   ; Testing info EA: A1,A2 (destination register 1, mode A) (source register 2, A)
-
+                    MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
+                    *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
+                    *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
 OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE' 
@@ -29,8 +30,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     AND.L       #%0011000000000000,D4   ; clear all bits except the size     
                     LSR.L       #8,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                    
                     LSR.L       #4,D4
-                                                       
-                                   
+                  
                     CMP.B       #%01,D4                 ; checking if the size is byte
                     BEQ         MOVE_Byte               ; branch to the byte condition
 
@@ -42,9 +42,26 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     
                     BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted
 
-*----------------------  MOVE: Get Destination  --------------
 MOVE_Dest_Reg       CLR         D4
-                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+
+*----------------------  MOVE: Get Source  -------------------
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+                    
+                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
+
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
+                    
+*----------------------  MOVE: Get Destination  --------------
+                    CLR         D4
+                    MOVE.L      A0,D4               
+
                     AND.L       #%0000111000000000,D4   ; clear all bits except the Destination Register 
                     MOVE.L      #9,D1                    
                     LSR.L       D1,D4                   ; access the destination register
@@ -57,21 +74,6 @@ MOVE_Dest_Reg       CLR         D4
                     AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
                     LSR.L       #6,D4                   ; stores destination mode in D4
 
-                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
-
-                    LEA         Comma,A1                ; prints a comma
-                    MOVE.B      #14,D0
-                    TRAP        #15
-*----------------------  MOVE: Get Source  -------------------
-                    CLR         D4
-                    MOVE.L      A0,D4
-                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
-                    LSR.L       #3,D4                   ; stores source mode in D4
-
-                    MOVE.L      A0,D5                   
-                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
-                    
-                    
 *----------------------  MOVE: Send to EA  -------------------
 
                     JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
@@ -154,8 +156,6 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
 *-----------------------------------------------------------------
 
 
-
-
 *------------------------  LEA  ----------------------------------
 * Written by :  Anna Jennings
 * Date       :  11/5/2020
@@ -181,15 +181,35 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     CMP.B       #0,D4
                     BLT         Invalid_Instruction     ; branch if less than 0
                     
-                    MOVE.L      D4,D5                   ; copying the register number into D5
+                    MOVE.L      D4,D7                   ; copying the register number into D5
                     CLR         D4
                     
 *-----------------------  LEA: Get Effective Address  -------------
-                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on  
-                    AND.L       #%0000000000111111,D4   ; clearing all bits to isolate the effective address
-                    MOVE.L      D4,D6                   ; copying the Effective address to D6
-                    CLR         D4                      ; Clear register D4
+                    CLR         D4
+                    MOVE.L      A0,D4
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
 
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+                    
+                    JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source
+                    CLR         D4
+                    CLR         D5
+
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
+
+                    MOVE.L      #1,D4                   ; sets the mode to 001
+                    MOVE.L      D7,D5                   ; moves the registration bits to D5
+                    CLR         D7
+                    JSR         EA_DECODE                    
+                    
+                    *MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on  
+                    *AND.L       #%0000000000111111,D4   ; clearing all bits to isolate the effective address
+                    *MOVE.L      D4,D6                   ; copying the Effective address to D6
+                    *CLR         D4                      ; Clear register D4
 
 *----------------------  LEA: Send to EA  --------------------------
                     BRA         EA_LEA                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
@@ -200,8 +220,7 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
 *LEA has been printed 
 *D5 holds the register number
 *D6 holds the effective address (mode,register)
-*------------------------------------------------------------------- 
-
+*-------------------------------------------------------------------       
 
 
 *------------------------  ADD  ----------------------------------
@@ -288,7 +307,100 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 *---------------------  End of ADD  --------------------------------
 *ADD has been printed 
 *RC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER hold the corresponding data
-*-------------------------------------------------------------------     
+*------------------------------------------------------------------- 
+
+
+*------------------------  SUB  ----------------------------------
+* Written by :  Lexun Chi
+* Date       :  11/27/2020
+* Description:  SUB op-code
+*-----------------------------------------------------------------
+
+                    MOVE.L      #%100111001000000,A0   ; Testing Info
+
+*------------------------  ADD: Diplay ADD  ----------------------
+OP_SUB              LEA         SUB_Output,A1           ; Display 'SUB'
+                    MOVE.B      #14,D0                  ; trap rask 14 is loaded int D0
+                    TRAP        #15                     ; trap 15 is for output
+                    
+                    MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
+                    AND.L       #%0000000100000000,D4   ; Clear all bits except for Bit 8
+                    LSR.L       #8,D4                   ; access Bit 8, do this by shifting the number the right 8 bits
+                    
+                    CMP.B       #%00,D4                 ; Bit 8 = 0
+                    BEQ         SUB_DN                   
+                    
+                    CMP.B       #%01,D4                 ; Bit 8 = 1
+                    BEQ         SUB_EA
+
+*------------------------ SUB Dn - <ea> --> Dn  --------------------------
+SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
+
+                    MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    
+                    MOVE.W      D7,SRC_MODE             ; Copy bits to decode source mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 2
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                
+                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
+                
+                    MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    
+                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
+
+                    BRA         EA_SUB                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
+       
+       
+*----------------------- SUB Dn + <ea> --> <ea> ----------------------------------
+SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
+                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+
+                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on   
+                    MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+
+                    MOVE.W      D7,DEST_MODE            ; Copy bits to decode destination mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 2
+                    LSR.W       D0,D7                   ; Isolate the remainder bits            
+                    
+                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
+                    
+                    BRA         EA_SUB                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+
+
+*---------------------  End of SUB  --------------------------------
+*SUB has been printed 
+*RC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER hold the corresponding data
+*------------------------------------------------------------------- 
+
+
+
+
+
+*---------------------  Next OP-Code  ------------------------------------------
+*-------------------------------------------------------------------       
 
 
 
@@ -381,8 +493,6 @@ NOT_Long            LEA         Output_Long,A1          ; Display '.L' for MOVE 
 *NOT and size have been printed
 *D4 holds the effective address (mode, register)
 *-----------------------------------------------------------------                    
-
-
 
 
 *-------------------------  Shift (LSL, ASR)  --------------------------
@@ -506,8 +616,6 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
 *D6 holds i/r bit to determine whether count or register
 *-----------------------------------------------------------------  
 
-
-
 *---------------------  Next OP-Code  -----------------------
 
 
@@ -537,6 +645,7 @@ LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
 L_Output            DC.W        'L',0
+
 Next_Line           DC.W        CR,LF,0
 
 Comma               DC.W        ',',0
@@ -546,8 +655,12 @@ SRC_MODE            DS.W        1                       ; Storage for the source
 SRC_REGISTER        DS.W        1                       ; Storage for the source EA register ID  
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
 DEST_REGISTER       DS.W        1                       ; Storage for the destination EA register ID
+
+*EA_MOVE
 EA_LEA 
 EA_ADD
+EA_SUB
+
 
 Invalid_Instruction 
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
@@ -561,9 +674,6 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
-
-
-
 
 
 

@@ -13,12 +13,12 @@ EA_DECODE  		LEA     EA_JMP,A4       ; loads ea jump table in A4
                 RTS
 
 *---------------------- EA Jump table ----------------------
-EA_JMP          JMP     Address000      ; data register
-                JMP     Address001      ; address register
-                *JMP    Address010      ; address indirect
-                *JMP    Address011      ; address with post-increment
-                *JMP    Address100      ; address with pre-decrement
-                *JMP    Address111      ; absolute short, absolute long, immediate
+EA_JMP          JMP     Address000      ; data register Dn
+                JMP     Address001      ; address register An
+                JMP     Address010      ; address indirect (An)
+                *JMP    Address011      ; address with post-increment (An)+
+                *JMP    Address100      ; address with pre-decrement -(An)
+                *JMP    Address111      ; absolute short (xxx).W, absolute long (xxx).L, immediate #imm
 
 *---------------- Address000 - Data register ----------------
 Address000      MOVE.L          #26, D6
@@ -45,6 +45,29 @@ Address001      MOVE.L          #20, D6
                 TRAP            #15
 
                 RTS
+                
+*---------- Address010 - Address Register Indirect ----------  
+Address010      MOVE.L          #20, D6
+
+                LEA             Open_P,A1                ; prints an open parenthesis
+                MOVE.B          #14,D0
+                TRAP            #15
+                
+                LEA             0(A5, D6),A1
+                MOVE.B          #14, D0
+                TRAP            #15 
+                
+                MULU            #2, D5
+                LEA             0(A5, D5),A1
+                MOVE.B          #14, D0
+                TRAP            #15
+
+                LEA             Close_P,A1                ; prints a close parenthesis
+                MOVE.B          #14,D0
+                TRAP            #15
+               
+                
+                RTS
 
 
 *---------------------- Hex table ----------------------
@@ -64,6 +87,10 @@ HEX_TABLE       DC.B    '0',0
                 DC.B    'D',0
                 DC.B    'E',0
                 DC.B    'F',0
+                
+Open_P          DC.W    '(',0
+Close_P         DC.W    ')',0
+
 
 
 *~Font name~Courier New~
