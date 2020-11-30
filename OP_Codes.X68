@@ -17,7 +17,7 @@ START:              ORG    $1000                         ; first instruction of 
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
                     *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
-                    MOVE.L      #%0010010011100111,A0   ; Testing outputs MOVE.L -(A7),(A2)+
+                    MOVE.L      #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
                     *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
