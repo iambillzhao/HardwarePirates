@@ -18,6 +18,7 @@ START:              ORG    $1000                         ; first instruction of 
                     MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
                     *BRA         OP_LEA
+
 *----------------------  MOVE: Display MOVE -----------------
 OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
@@ -29,7 +30,7 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
                     AND.L       #%0011000000000000,D4   ; clear all bits except the size     
                     LSR.L       #8,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                    
                     LSR.L       #4,D4
-                                                                                             
+                  
                     CMP.B       #%01,D4                 ; checking if the size is byte
                     BEQ         MOVE_Byte               ; branch to the byte condition
 
@@ -60,6 +61,7 @@ MOVE_Dest_Reg       CLR         D4
 *----------------------  MOVE: Get Destination  --------------
                     CLR         D4
                     MOVE.L      A0,D4               
+
                     AND.L       #%0000111000000000,D4   ; clear all bits except the Destination Register 
                     MOVE.L      #9,D1                    
                     LSR.L       D1,D4                   ; access the destination register
@@ -71,6 +73,7 @@ MOVE_Dest_Reg       CLR         D4
 
                     AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
                     LSR.L       #6,D4                   ; stores destination mode in D4
+
 *----------------------  MOVE: Send to EA  -------------------
 
                     JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
@@ -151,7 +154,6 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
 *----------------------  End of RTS  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
-
 
 
 *------------------------  LEA  ----------------------------------
@@ -493,6 +495,126 @@ NOT_Long            LEA         Output_Long,A1          ; Display '.L' for MOVE 
 *-----------------------------------------------------------------                    
 
 
+*-------------------------  Shift (LSL, ASR)  --------------------------
+* Written by :  Anna Jennings
+* Date       :  11/27/2020
+* Description:  Prints the Shift EA
+*-----------------------------------------------------------
+                    MOVE.L      #%1110001001001010,A0   ; Testing info EA: A1,A2 (destination register 1, mode A) (source register 2, A)
+
+*---------------------  Display Shift Type  -----------------
+OP_Shift             MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000011000,D4   ; clear all bits except the shift type     
+                    LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
+                    LSR.L       #1,D4
+                    
+                    CMP.B       #%01,D4                 ; checking to see if LS 
+                    BRA         LS_Display              ; branch if LS
+                    
+                    CMP.B       #%00,D4                 ; checking to if AS
+                    BRA         AS_Display              ; branch if AS
+                    
+                    BRA         Invalid_Instruction     ; invailid insruction and move on
+                    
+*-------------------- LSL: Direction Check  ----------------
+Shift_Dir           MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0000000100000000,D4   ; clear all bits except the direction bit     
+                    LSR.L       #8,D4                   ; access the direction element of the instruction, do this by shifting the number the right 8 bits
+                    
+                    CMP.B       #%1,D4                  ; if the bit is a 1 the direction is left 
+                    BRA         Left_Dir_Output
+                    
+                    CMP.B       #%0,D4                  ; if the bit is a 0 the direction is right                   
+                    BRA         Right_Dir_Output        ; branch if right direction
+                    
+                    BRA         Invalid_Instruction     ; invailid insruction and move on
+
+*----------------  Shift: Get Register/Count  -------------
+Shift_Reg           CLR         D4                      ; clearing D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000111000000000,D4   ; clear all bits except the register     
+                    LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
+                    LSR.L       #1,D4
+       
+                    MOVE.L      D4,D5                   ; storing the register/count in D5
+                    CLR         D4                      ; clearing D4 
+                    
+*-----------------  Shift: Get Size  -----------------------
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                                     
+                                   
+                    CMP.B       #%00,D4                 ; checking if the size is byte
+                    BEQ         Shift_Byte              ; branch to the byte condition
+
+                    CMP.B       #%01,D4                 ; checking if the size is Word  
+                    BEQ         Shift_Word              ; branch to Word condition
+
+                    CMP.B       #%10,D4                 ; checking if the size is Long
+                    BEQ         Shift_Long              ; Branch to Long Condition
+                    
+                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted   
+                 
+*-----------------  Shift: Get I/R  ------------------------
+Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000100000,D4   ; clear all bits except the i/r
+                    LSR.L       #5,D4                   ; access the i/r elememt, by shifting 5 places to the right
+
+                    MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
+                    JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
+   
+
+*--------------------  LSL: Functions  ---------------------
+LS_Display          LEA         LS_Output,A1            ; Display 'LS' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    BRA         Shift_Dir
+  
+AS_Display          LEA         AS_Output,A1            ; Display 'AS' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+                    BRA         Shift_Dir
+                    
+Left_Dir_Output     LEA         L_Output,A1             ; Display 'L' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15
+                    
+                    BRA         Shift_Reg 
+   
+Right_Dir_Output    LEA         R_Output,A1             ; Display 'R' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15
+                    
+                    BRA         Shift_Reg                 
+                  
+Shift_Byte          LEA         Output_Byte,A1          ; Display '.B' for LSL size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         Shift_IR                ; return to code
+
+                    
+Shift_Word          LEA         Output_Word,A1          ; Display '.W' for LSL size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                   
+                    BRA         Shift_IR                ; return to code
+ 
+Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         Shift_IR                ; return to code
+
+
+*----------------------  End of Shift  -----------------------------
+*AS* or LS* printed with the appropriate direction of shift
+*printed instruciton size 
+*D5 holds the count/register depending on i/r
+*D6 holds i/r bit to determine whether count or register
+*-----------------------------------------------------------------  
 
 *---------------------  Next OP-Code  -----------------------
 
@@ -515,11 +637,15 @@ Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
 MOVE_Output         DC.W        'MOVE',0
 NOP_Output          DC.W        'NOP',0
-LEA_Output          DC.W        'LEA     ',0
+LEA_Output          DC.W        'LEA',0
 ADD_Output          DC.W        'ADD',0
-SUB_Output          DC.W        'SUB',0
 JSR_Output          DC.W        'JSR',0
 NOT_Output          DC.W        'NOT',0
+LS_Output           DC.W        'LS',0
+AS_Output           DC.W        'AS',0
+R_Output            DC.W        'R',0
+L_Output            DC.W        'L',0
+
 Next_Line           DC.W        CR,LF,0
 
 Comma               DC.W        ',',0
@@ -530,11 +656,11 @@ SRC_REGISTER        DS.W        1                       ; Storage for the source
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
 DEST_REGISTER       DS.W        1                       ; Storage for the destination EA register ID
 
-
 *EA_MOVE
 EA_LEA 
 EA_ADD
 EA_SUB
+
 
 Invalid_Instruction 
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
@@ -548,11 +674,6 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
-
-
-
-
-
 
 
 
