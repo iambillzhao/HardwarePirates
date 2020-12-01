@@ -37,6 +37,15 @@ START:                  ; first instruction of program
 
 *--------------------- INPUT CATCHING ---------------------- 
 BEG: 
+    CLR     D0          ; clears register D0
+    CLR     D1          ; clears register D1
+    CLR     D2          ; clears register D2
+    CLR     D3          ; clears register D3
+    CLR     D4          ; clears register D4
+    CLR     D5          ; clears register D5
+    CLR     D6          ; clears register D6
+    CLR     D7          ; clears register D7
+    
     ; LOAD FIRST MESSAGE, Q TO QUIT
     LEA     INPUTBEG,A1 ; loads message to A1
     MOVE.B  #14,D0      ; sets to task 14
@@ -54,6 +63,12 @@ BEG:
     BGT     INVALIDADD  ; triggers program's invalid branch
     JSR     BCON        ; loops to get the next input
     MOVEA.L D3,A5       ; moves temporary address to A5 for start
+    MOVE.L  D3,D5       ; moves the value of D3 to D5 for checks
+    
+    ; ADDRESS CHECKS
+    ANDI.B  #1,D3       ; checks if it is odd
+    BNE     INVALIDADD  ; invalid if odd
+    
     CLR     D3          ; clears D3 for ending address
     
 END:
@@ -74,7 +89,14 @@ END:
     BGT     INVALIDADD  ; triggers program's invalid branch
     JSR     BCON        ; loops to get the next input
     MOVEA.L  D3,A6      ; moves temporary address to A6 for end
-    BRA     NOW
+    
+    ; ADDRESS CHECKS
+    ANDI.B  #1,D3       ; checks if it is odd
+    BNE     INVALIDADD  ; invalid if odd
+    CMP.L   D3,D5       ; checks if the ending address is less
+    BGT     INVALIDADD  ; ending address is less (invalid)
+    
+    BRA     NOW         ; continues to disassembly
 
 *-------------------- ASCII CONVERSION --------------------- 
 BCON:
@@ -122,10 +144,9 @@ BACK:
     
 *-------------------- DISASSEMBLY --------------------------
 NOW:
-    ; NOT YET
-    SIMHALT
+    ; TODO: JUMP TO OPCODE TO OUTPUT
+    BRA     ASK
     
-
     
 *-------------------- PROGRAM LOOP -------------------------
 ASK:
@@ -168,7 +189,6 @@ BYE:
 *------------------------ CONSTANTS ------------------------
 CR      EQU     $0D
 LF      EQU     $0A
-STACK   EQU     $0000A000
 
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
         DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0        
