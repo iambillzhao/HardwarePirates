@@ -64,13 +64,13 @@ BEG:
     BEQ     INVALIDADD  ; triggers program's invalid branch
     CMP.W   #$0008,D1   ; compares 8 to D1
     BGT     INVALIDADD  ; triggers program's invalid branch
-    JSR     BCON        ; loops to get the next input
+    JSR     BCON        ; loops to convert ASCII to hex
     MOVEA.L D3,A5       ; moves temporary address to A5 for start
     MOVE.L  D3,D5       ; moves the value of D3 to D5 for checks
     
     ; ADDRESS CHECKS
     ANDI.B  #1,D3       ; checks if it is odd
-    BNE     INVALIDADD  ; invalid if odd
+    BNE     INVALIDADD  ; invalid if odd, error
     
     CLR     D3          ; clears D3 for ending address
     
@@ -90,14 +90,14 @@ END:
     BEQ     INVALIDADD  ; triggers program's invalid branch
     CMP.W   #$0008,D1   ; compares 8 to D1
     BGT     INVALIDADD  ; triggers program's invalid branch
-    JSR     BCON        ; loops to get the next input
+    JSR     BCON        ; loops to convert ASCII to hex
     MOVEA.L D3,A6       ; moves temporary address to A6 for end
     
     ; ADDRESS CHECKS
     ANDI.B  #1,D3       ; checks if it is odd
-    BNE     INVALIDADD  ; invalid if odd
+    BNE     INVALIDADD  ; invalid if odd, error
     CMP.L   D3,D5       ; checks if the ending address is less
-    BGT     INVALIDADD  ; ending address is less (invalid)
+    BGT     INVALIDADD  ; ending address is less, invalid
     
     BRA     NOW         ; continues to disassembly
 
@@ -106,8 +106,8 @@ BCON:
     ; DETERMINE NUMBER OR LETTER
     CMPI.B  #$0,D1      ; compares length in D1 to 0
     BEQ     BACK        ; if length is 0, go back
-    CLR     D0          ; clear D0 for conversion
-    MOVE.B  (A1)+,D0    ; increment A1 pointer to D0
+    CLR     D0          ; clears D0 for conversion
+    MOVE.B  (A1)+,D0    ; increments A1 pointer to D0
     
     ; NUMBER CASE
     CMPI.B  #$39,D0     ; compares with 39
@@ -115,28 +115,30 @@ BCON:
     
     ; LETTER CASE
     CMPI.B  #$66,D0     ; compares with 66
-    BLE     LET         ; > 46 is a letter
+    BLE     LET         ; > 66 is a letter
     
     ; ADDRESS CHECKS
     BRA     INVALIDADD  ; otherwise, it is invalid
 
 NUM:
+    ; NUMBER CONVERSION
     SUBI.B  #$30,D0     ; number to convert directly
     BRA     NEXT        ; next character
 
 LET:
-    SUBI.B  #$37,D0     ; letter to be converted
+    ; LETTER CONVERSION
+    SUBI.B  #$37,D0     ; minus 37 from ASCII
     CMP.B   #$20,D0     ; uppercased to be converted
-    BLT     LETCON      ; branch to letter conversion
+    BLT     LETCON      ; branches to letter conversion
     SUBI.B  #$20,D0     ; lowercased to uppercased
-    BRA     LETCON      ; branch to letter conversion
+    BRA     LETCON      ; branches to letter conversion
     
 LETCON:
     ; ADDDRESS CHECKS
     CMP.B   #$A,D0      ; compares with A
     BLT     INVALIDADD  ; hex less than A is invalid, error
     CMP.B   #$F,D0      ; compares with F
-    BGT     INVALIDADD  ; hex less than F is invalid, error
+    BGT     INVALIDADD  ; hex greater than F is invalid, error
     
     ; VALID CHARACTER
     BRA     NEXT        ; next character
@@ -144,7 +146,7 @@ LETCON:
 NEXT:
     ; DECREMENT COUNTER
     ADD.B   D0,D3       ; adds D0 and D3
-    SUBI.B  #$1,D1      ; decrement D1 by 1
+    SUBI.B  #$1,D1      ; decrements D1 by 1
     
     ; ALL PROCESSED
     CMPI.B  #$0,D1      ; if length is 0
@@ -174,7 +176,7 @@ NOW:
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
     JSR     00(A3,D4)   ; jsr using word processes
-    BRA     ASK         ; finish disassembly and prompt
+    BRA     ASK         ; finishes disassembly and prompts
 
 OPCODES:
     JMP     S00         ; for MOVE
@@ -255,7 +257,7 @@ ASK:
     ; QUIT CONDITION
     CMP.B   #'Q',D1     ; if input is Q
     BEQ     BYE         ; aborts program
-    BRA     BEG         ; otherwise, loop to the beginning
+    BRA     BEG         ; otherwise, loops to the beginning
 
 
 *-------------------- INVALID ERROR ------------------------ 
@@ -279,6 +281,7 @@ INVALIDADD:
 
 *-------------------- PROGRAM COMPLETE --------------------- 
 BYE:
+    ; END OF PROGRAM
     LEA     GOODBYE,A1  ; loads message to A1
     MOVE.B  #14,D0      ; sets to task 14
     TRAP    #15         ; displays message and asks for input
@@ -315,6 +318,7 @@ SADD    DS.B    8       ; starting address storage
 EADD    DS.B    8       ; ending address storage
 
     END    START        ; last line of source
+
 
 
 
