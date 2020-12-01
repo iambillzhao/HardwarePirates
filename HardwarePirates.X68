@@ -10,7 +10,7 @@
 START:                  ; first instruction of program
 
 *---------------------- PROGRAM SET ------------------------
-    ; INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
+    INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
     ; INCLUDE 'EA_CODES.X68'  ; includes ea code disassembly
     CLR     D0          ; clears register D0
     CLR     D1          ; clears register D1
@@ -144,10 +144,72 @@ BACK:
     
 *-------------------- DISASSEMBLY --------------------------
 NOW:
-    ; TODO: JUMP TO OPCODE TO OUTPUT
-    BRA     ASK
+    MOVE.W  D7,D4       ; moves code to D4
+    CLR     D0          ; clears D0
+    MOVE.B  #12,D0      ; puts 12 in D0
+    LSR.W   D0,D4       ; shifts D4 by 12
+    MULU    #6,D4       ; gets offset
+    LEA     OPCODES,A3  ; loads op-code jump table
+    JSR     00(A3,D4)   ; jsr using word processes
+    BRA     ASK         ; finish disassembly and prompt
+
+OPCODES:
+    JMP     S00         ; for MOVE
+    JMP     S0100       ; for NOT,JSR,RTS,NOP,MOVEM,LEA
+    JMP     S0110       ; for BRA,BCC (BLT,BGE,BEQ)
+    JMP     S1001       ; for SUB
+    JMP     S1100       ; for MULS,AND
+    JMP     S1101       ; for ADD
+    JMP     S1110       ; for SHIFT (LSL,ASR)
     
+S00:
+    CLR     D4          ; clears data register D4
+    BRA     OP_MOVE     ; redirects to MOVE
     
+S0100:
+    CLR     D4          ; clears data register D4
+    MOVE.L  D7,D4       ; copies from D7 to D4
+    CMP.L   #$0100111001110101,D4 ; compares to RTS
+    BEQ     OP_RTS      ; redirects to RTS
+    CMP.L   #$0100111001110001,D4 ; compares to NOP
+    BEQ     OP_NOP      ; redirects to NOP
+    ASL.B   #4,D4       ; shifts 4 of D4
+    CMP.W   #$1110,D4   ; compares to JSR unique bits
+    BEQ     OP_JSR      ; redirects to JSR
+    CMP.W   #$0110,D4   ; compares to NOT unique bits
+    BEQ     OP_NOT      ; redirects to NOT
+    CMP.W   #$1000,D4   ; compares to MOVEM unique bits
+    BEQ     OP_MOVEM    ; redirects to MOVEM
+    CMP.W   #$1100,D4   ; compares to MOVEM unique bits
+    BEQ     OP_MOVEM    ; redirects to MOVEM
+    BRA     LEA         ; redirects to LEA otherwise
+            
+S0110:
+    CLR     D4          ; clears data register D4
+    BRA     OP_BRANCH   ; redirects to BRANCH (BRA,BCC)    
+    
+S1001:
+    CLR     D4          ; clears data register D4
+    BRA     OP_SUB      ; redirects to SUB
+    
+S1100:
+    CLR     D4          ; clears data register D4
+    MOVE.L  D7,D4       ; copies from D7 to D4
+    ASL.B   #6,D4       ; shifts by 6 bits
+    CMP.W   #$0111,D4   ; compares with MULS unique bits
+    BEQ     OP_MULS     ; redirects to MULS
+    CMP.W   #$1111,D4   ; compares with MULS unique bits
+    BEQ     OP_MULS     ; redirects to MULS
+    BRA     OP_AND      ; redirects to AND otherwise
+        
+S1101:
+    CLR     D4          ; clears data register D4
+    BRA     OP_ADD      ; redirects to ADD
+    
+S1110:
+    CLR     D4          ; clears data register D4
+    BRA     OP_SHIFT    ; redirects to SHIFT (ASR,LSL)
+
 *-------------------- PROGRAM LOOP -------------------------
 ASK:
     LEA     INPUTCON,A1 ; asks if user wants to loop
@@ -183,7 +245,7 @@ BYE:
     MOVE.B  #14,D0      ; sets to task 14
     TRAP    #15         ; displays message and asks for input
     
-    SIMHALT             ; halt simulator
+    SIMHALT             ; halts simulator
 
 
 *------------------------ CONSTANTS ------------------------
@@ -197,9 +259,9 @@ INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE BEGINNING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
-INPUTCON DC.B   'TYPE ANY SINGLE-DIGIT INTEGER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',0
+INPUTCON DC.B   'TYPE ANY SINGLE-DIGIT INTEGER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',CR,LF,0
 
-DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',0
+DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',CR,LF,0
         
 INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF
 
@@ -207,11 +269,13 @@ GOODBYE DC.B    CR,LF,'Thank you for using our disassembler, good bye!',CR,LF,0
 
 
 *------------------------ VARIABLES ------------------------
-SADD    DS.B    8
+SADD    DS.B    8       ; starting address storage
 
-EADD    DS.B    8
+EADD    DS.B    8       ; ending address storage
 
     END    START        ; last line of source
+
+
 
 
 
