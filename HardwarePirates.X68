@@ -4,40 +4,196 @@
 * Date       : Fall 2020
 * Description: CSS 422 Disassembler
 *-----------------------------------------------------------
+
     ORG    $1000
+    
 START:                  ; first instruction of program
 
-* Put program code here
+*---------------------- PROGRAM SET ------------------------
+    ; INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
+    ; INCLUDE 'EA_CODES.X68'  ; includes ea code disassembly
+    CLR     D0          ; clears register D0
+    CLR     D1          ; clears register D1
+    CLR     D2          ; clears register D2
+    CLR     D3          ; clears register D3
+    CLR     D4          ; clears register D4
+    CLR     D5          ; clears register D5
+    CLR     D6          ; clears register D6
+    CLR     D7          ; clears register D7
+
+    
+*-------------------------  I/O  ---------------------------
+* Written by :  Bill Zhao
+* Date       :  November 2020
+* Description:  Process input and produce output
+*-----------------------------------------------------------
+
+
+*--------------------  I/O Initialization ------------------
     LEA     WELCOME,A1  ; loads message to A1
     MOVE.B  #14,D0      ; sets to task 14
-    TRAP    #15         ; displays message and asks for input
+    TRAP    #15         ; displays welcome message
 
-BEG LEA     INPUT,A1    ; loads message to A1
+
+*--------------------- INPUT CATCHING ---------------------- 
+BEG: 
+    ; LOAD FIRST MESSAGE, Q TO QUIT
+    LEA     INPUTBEG,A1 ; loads message to A1
     MOVE.B  #14,D0      ; sets to task 14
     TRAP    #15         ; displays message and asks for input
-    MOVE.B  #4,D0       ; sets to task 2
-    TRAP    #15         ; gets input from the user
-    CMP     #$0,D1      ; compares 0 to D1
-    BEQ     END         ; triggers program's goodbye branch
-    BRA     BEG         ; loops to get the next input
     
-END LEA     GOODBYE,A1  ; loads message to A1
+    ; CATCH INPUT, CONVERT TO ASCII
+    MOVE.B  #2,D0       ; sets to task 2
+    LEA     SADD,A1     ; loads starting address to A1
+    TRAP    #15         ; gets input from the user
+    
+    ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
+    CMP.W   #$0000,D1   ; compares 0 to D1
+    BEQ     INVALIDADD  ; triggers program's invalid branch
+    CMP.W   #$0008,D1   ; compares 8 to D1
+    BGT     INVALIDADD  ; triggers program's invalid branch
+    JSR     BCON        ; loops to get the next input
+    MOVEA.L D3,A5       ; moves temporary address to A5 for start
+    CLR     D3          ; clears D3 for ending address
+    
+END:
+    ; LOAD FIRST MESSAGE, Q TO QUIT
+    LEA     INPUTEND,A1 ; loads message to A1
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; displays message and asks for input
+    
+    ; CATCH INPUT, CONVERT TO ASCII
+    MOVE.B  #2,D0       ; sets to task 2
+    LEA     EADD,A1     ; loads ending address to A1
+    TRAP    #15         ; gets input from the user
+    
+    ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
+    CMP.W   #$0000,D1   ; compares 0 to D1
+    BEQ     INVALIDADD  ; triggers program's invalid branch
+    CMP.W   #$0008,D1   ; compares 8 to D1
+    BGT     INVALIDADD  ; triggers program's invalid branch
+    JSR     BCON        ; loops to get the next input
+    MOVEA.L  D3,A6      ; moves temporary address to A6 for end
+    BRA     NOW
+
+*-------------------- ASCII CONVERSION --------------------- 
+BCON:
+    CMPI.B  #$0,D1      ; compares length in D1 to 0
+    BEQ     BACK        ; if length is 0, go back
+    CLR     D0          ; clear D0 for conversion
+    MOVE.B  (A1)+,D0    ; increment A1 pointer to D0
+    CMPI.B  #$39,D0     ; compares with 39
+    BLE     NUM         ; < 39 is a number
+    CMPI.B  #$46,D0     ; compares with 46
+    BLE     LET         ; > 46 is a letter
+    BRA     INVALIDADD  ; otherwise, it is invalid
+
+NUM:
+    SUBI.B  #$30,D0     ; number to convert directly
+    BRA     NEXT        ; next character
+
+LET:
+    SUBI.B  #$37,D0     ; letter to be converted
+    CMP.B   #$20,D0     ; uppercased to be converted
+    BLT     LETCON      ; branch to letter conversion
+    SUBI.B  #$20,D0     ; lowercased to uppercased
+    BRA     LETCON      ; branch to letter conversion
+    
+LETCON:
+    CMP.B   #$A,D0      ; compares with A
+    BLT     INVALIDADD  ; hex less than A is invalid, error
+    CMP.B   #$F,D0      ; compares with F
+    BGT     INVALIDADD  ; hex less than F is invalid, error
+    BRA     NEXT        ; next character
+    
+NEXT:
+    ADD.B   D0,D3       ; adds D0 and D3
+    SUBI.B  #$1,D1      ; decrement D1 by 1
+    CMPI.B  #$0,D1      ; if length is 0
+    BEQ     BACK        ; go back to original jsr
+    MOVE.L  #0,D0       ; sets D0 to 0
+    ASL.L   #4,D3       ; shifts left 4 of D3
+    ADD.B   D0,D3       ; adds D0 and D3
+    BRA     BCON        ; next character conversion
+    
+BACK:
+    RTS                 ; rts to go back to original jsr
+    
+    
+*-------------------- DISASSEMBLY --------------------------
+NOW:
+    ; NOT YET
+    SIMHALT
+    
+
+    
+*-------------------- PROGRAM LOOP -------------------------
+ASK:
+    LEA     INPUTCON,A1 ; asks if user wants to loop
+    CLR     D0          ; clears D0
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; sets to trap 15, display
+    MOVE.B  #5,D0       ; sets to task 5
+    TRAP    #15         ; sets to trap 15, catch input char
+    CMP.B   #'Q',D1     ; if input is Q
+    BEQ     BYE         ; aborts program
+    BRA     BEG         ; otherwise, loop to the beginning
+
+
+*-------------------- INVALID ERROR ------------------------ 
+INVALIDADD:
+    LEA     INVALID,A1  ; loads message to A1
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; displays message
+    CLR     D0          ; clears register D0
+    CLR     D1          ; clears register D1
+    CLR     D2          ; clears register D2
+    CLR     D3          ; clears register D3
+    CLR     D4          ; clears register D4
+    CLR     D5          ; clears register D5
+    CLR     D6          ; clears register D6
+    CLR     D7          ; clears register D7
+    BRA     BEG         ; loop from the program beginning
+
+
+*-------------------- PROGRAM COMPLETE --------------------- 
+BYE:
+    LEA     GOODBYE,A1  ; loads message to A1
     MOVE.B  #14,D0      ; sets to task 14
     TRAP    #15         ; displays message and asks for input
     
     SIMHALT             ; halt simulator
 
-* Put variables and constants here
+
+*------------------------ CONSTANTS ------------------------
 CR      EQU     $0D
 LF      EQU     $0A
+STACK   EQU     $0000A000
 
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
         DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0        
 
-INPUT   DC.B    CR,LF,'PLEASE ENTER AN ADDRESS, TYPE "0" TO QUIT: ',0
+INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE BEGINNING ADDRESS: ',0
+
+INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
+
+INPUTCON DC.B   'TYPE ANY SINGLE-DIGIT INTEGER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',0
+
+DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',0
         
+INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF
+
 GOODBYE DC.B    CR,LF,'Thank you for using our disassembler, good bye!',CR,LF,0
+
+
+*------------------------ VARIABLES ------------------------
+SADD    DS.B    8
+
+EADD    DS.B    8
+
     END    START        ; last line of source
+
+
 
 
 
