@@ -114,7 +114,7 @@ BCON:
     BLE     NUM         ; < 39 is a number
     
     ; LETTER CASE
-    CMPI.B  #$46,D0     ; compares with 46
+    CMPI.B  #$66,D0     ; compares with 66
     BLE     LET         ; > 46 is a letter
     
     ; ADDRESS CHECKS
@@ -293,17 +293,20 @@ LF      EQU     $0A
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
         DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0        
 
-INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE BEGINNING ADDRESS: ',0
+INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
-INPUTCON DC.B   'TYPE ANY SINGLE-DIGIT INTEGER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',CR,LF,0
+INPUTCON DC.B   'TYPE ANY CHARACTER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',CR,LF,0
 
 DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',CR,LF,0
         
-INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF
+INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF,0
 
-GOODBYE DC.B    CR,LF,'Thank you for using our disassembler, good bye!',CR,LF,0
+GOODBYE DC.B    CR,LF,'Thank you for using our disassembler!',CR,LF,0
+
+
+*------------------------ END OF I/O -----------------------
 
 
 *------------------------ VARIABLES ------------------------
