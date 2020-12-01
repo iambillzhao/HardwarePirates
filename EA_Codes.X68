@@ -16,8 +16,8 @@ EA_DECODE  		LEA     EA_JMP,A4       ; loads ea jump table in A4
 EA_JMP          JMP     Address000      ; data register Dn
                 JMP     Address001      ; address register An
                 JMP     Address010      ; address indirect (An)
-                *JMP    Address011      ; address with post-increment (An)+
-                *JMP    Address100      ; address with pre-decrement -(An)
+                JMP     Address011      ; address with post-increment (An)+
+                JMP     Address100      ; address with pre-decrement -(An)
                 *JMP    Address111      ; absolute short (xxx).W, absolute long (xxx).L, immediate #imm
 
 *---------------- Address000 - Data register ----------------
@@ -69,6 +69,25 @@ Address010      MOVE.L          #20, D6
                 
                 RTS
 
+*---------- Address011 - Address Register Indirect with Post-Incrementing ----------  
+Address011      JSR				Address010
+				
+                LEA             Plus,A1                ; prints a plus
+                MOVE.B          #14,D0
+                TRAP            #15
+                              
+                RTS
+
+
+*---------- Address100 - Address Register Indirect with Pre-Decrementing ----------  
+Address100      LEA             Minus,A1                ; prints a minus
+                MOVE.B          #14,D0
+                TRAP            #15
+                
+                JSR             Address010
+                            
+                RTS
+
 
 *---------------------- Hex table ----------------------
 HEX_TABLE       DC.B    '0',0
@@ -90,7 +109,8 @@ HEX_TABLE       DC.B    '0',0
                 
 Open_P          DC.W    '(',0
 Close_P         DC.W    ')',0
-
+Plus            DC.W    '+',0
+Minus           DC.W    '-',0
 
 
 *~Font name~Courier New~

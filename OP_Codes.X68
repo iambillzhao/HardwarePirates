@@ -15,8 +15,9 @@ START:              ORG    $1000                         ; first instruction of 
 
                     *MOVE.L      #%0010010111111000,A0   ; Testing info
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
-                    MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
+                    *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
+                    MOVE.L      #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
                     *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
@@ -141,7 +142,7 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
  
 
 *-------------------------  Display RTS  ---------------------------------
-*OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS' 
+OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
@@ -637,10 +638,12 @@ Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
 MOVE_Output         DC.W        'MOVE',0
 NOP_Output          DC.W        'NOP',0
-LEA_Output          DC.W        'LEA',0
+LEA_Output          DC.W        'LEA     ',0
 ADD_Output          DC.W        'ADD',0
 JSR_Output          DC.W        'JSR',0
 NOT_Output          DC.W        'NOT',0
+RTS_Output          DC.W        'RTS',0
+SUB_Output          DC.W        'SUB',0
 LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
@@ -674,6 +677,7 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 
