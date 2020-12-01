@@ -10,8 +10,11 @@
 START:                  ; first instruction of program
 
 *---------------------- PROGRAM SET ------------------------
+    ; INCLUDE PROGRAM FILES
     INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
     INCLUDE 'EA_CODES.X68'  ; includes ea code disassembly
+    
+    ; CLEAR REGISTERS
     CLR     D0          ; clears register D0
     CLR     D1          ; clears register D1
     CLR     D2          ; clears register D2
@@ -88,7 +91,7 @@ END:
     CMP.W   #$0008,D1   ; compares 8 to D1
     BGT     INVALIDADD  ; triggers program's invalid branch
     JSR     BCON        ; loops to get the next input
-    MOVEA.L  D3,A6      ; moves temporary address to A6 for end
+    MOVEA.L D3,A6       ; moves temporary address to A6 for end
     
     ; ADDRESS CHECKS
     ANDI.B  #1,D3       ; checks if it is odd
@@ -309,6 +312,7 @@ SADD    DS.B    8       ; starting address storage
 EADD    DS.B    8       ; ending address storage
 
     END    START        ; last line of source
+
 
 
 *~Font name~Courier New~
