@@ -320,6 +320,13 @@ EADD    DS.B    8       ; ending address storage
     END    START        ; last line of source
 
 
+*------------------------ EXTERNAL REFERENCES --------------
+* https://www.ascii-code.com/
+* http://mrjester.hapisan.com/04_MC68/Sect05Part05/Index.html
+* http://www.easy68k.com/QuickStart/TrapTasks.htm
+* http://neo.dmcs.pl/pn/asembler_68000/asm.html
+* http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
+*------------------------ EXTERNAL REFERENCES --------------
 
 
 *~Font name~Courier New~
