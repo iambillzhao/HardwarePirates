@@ -99,7 +99,9 @@ END:
     CMP.L   D3,D5       ; checks if the ending address is less
     BGT     INVALIDADD  ; ending address is less, invalid
     
-    BRA     NOW         ; continues to disassembly
+    JSR     NOW         ; continues to disassembly
+    BRA     ASK         ; program starts to loop
+    
 
 *-------------------- ASCII CONVERSION --------------------- 
 BCON:
@@ -173,10 +175,12 @@ NOW:
     LSR.W   D0,D4       ; shifts D4 by 12
     MULU    #6,D4       ; gets offset
     
+    CMPA.L  A6,A5       ; compares addresses
+    BGT     RTS         ; goes back to the main branch
+    
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
     JSR     00(A3,D4)   ; jsr using word processes
-    BRA     ASK         ; finishes disassembly and prompts
 
 OPCODES:
     JMP     S00         ; for MOVE
@@ -326,6 +330,7 @@ EADD    DS.B    8       ; ending address storage
 * http://www.easy68k.com/QuickStart/TrapTasks.htm
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
+* https://stackoverflow.com/questions/48017/what-is-a-jump-table
 *------------------------ EXTERNAL REFERENCES --------------
 
 
