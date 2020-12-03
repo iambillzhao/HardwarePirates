@@ -657,7 +657,68 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
 *printed instruciton size 
 *D5 holds the count/register depending on i/r
 *D6 holds i/r bit to determine whether count or register
-*-----------------------------------------------------------------  
+*----------------------------------------------------------------- 
+
+
+
+
+*-------------------------  MOVEM  -------------------------
+* Written by :  Anna Jennings
+* Date       :  12/1/2020
+* Description:  Prints the MOVEM EA
+*----------------------------------------------------------- 
+
+*----------------  MOVEM: Display MOVEM  -------------------
+OP_MOVEM            LEA         MOVEM_Output,A1         ; Display 'MOVEM' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                    
+*---------------  MOVEM: Get size  -------------------------
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
+                    AND.L       #%0000000001000000,D4   ; isolate size bit
+                    LSR.L       #6,D4                   ; move size bit to msb
+                    
+                    CMP.B       #%0,D4                  ; checking if the size is word
+                    BEQ         MOVEM_Word              ; branch to word output       
+
+                    CMP.B       #%1,D4                  ; checking if the size is long
+                    BEQ         MOVEM_Long              ; branch to word output  
+
+                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted                    
+
+*--------------  MOVEM: Direction  -------------------------
+MOVEM_Dir           CLR         D4                      ; clears D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000010000000000,D4   ; isolate direction bit for EA
+                    LSR.L       #8,D4                   ; shift bits to isolate the direction bit
+                    LSR.L       #2,D4                   
+                    MOVE.L      D4,D5                   ; store direction bit in D5
+                    
+*---------------  MOVEM: Effective Address  ----------------                    
+                    CLR         D4                      ; clears D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000111111,D4   ; isolate the effective address
+
+                    JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
+
+*-------------- MOVEM: Functions  --------------------------
+MOVEM_Word          LEA         Output_Word,A1          ; Display '.W' for MOVEM size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                   
+                    BRA         MOVEM_Dir               ; return to code
+
+MOVEM_Long          LEA         Output_Long,A1          ; Display '.L' for MOVEM size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                   
+                    BRA         MOVEM_Dir               ; return to code
+                    
+*----------------------  End of MOVEM  ----------------------------
+*Movem and its size have been printed
+*D4 holds the effective address (mode, register)
+*D5 holds the direction bit
+*-----------------------------------------------------------------         
 
 *---------------------  Next OP-Code  -----------------------
 
@@ -679,6 +740,7 @@ Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
 MOVE_Output         DC.W        'MOVE',0
+MOVEM_Output        DC.W        'MOVEM',0
 NOP_Output          DC.W        'NOP',0
 LEA_Output          DC.W        'LEA     ',0
 ADD_Output          DC.W        'ADD',0
@@ -702,7 +764,6 @@ SRC_REGISTER        DS.W        1                       ; Storage for the source
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
 DEST_REGISTER       DS.W        1                       ; Storage for the destination EA register ID
 
-*EA_MOVE
 EA_LEA 
 EA_ADD
 EA_SUB
@@ -713,13 +774,16 @@ Invalid_Instruction
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
-                    nop
-                    INCLUDE     'EA_Codes.X68',0
+                    *BRA         NOW
+                    
+                     INCLUDE     'EA_Codes.X68',0
+                    *INCLUDE     'HardwarePirates.X68',0
                     
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 
