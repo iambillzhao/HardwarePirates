@@ -12,7 +12,7 @@ START:                  ; first instruction of program
 *---------------------- PROGRAM SET ------------------------
     ; INCLUDE PROGRAM FILES
     INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
-    INCLUDE 'EA_CODES.X68'  ; includes ea code disassembly
+    
     
     ; CLEAR REGISTERS
     CLR     D0          ; clears register D0
@@ -327,6 +327,8 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 *------------------------ EXTERNAL REFERENCES --------------
+
+
 
 
 *~Font name~Courier New~
