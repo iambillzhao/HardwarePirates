@@ -12,7 +12,7 @@ START:                  ; first instruction of program
 *---------------------- PROGRAM SET ------------------------
     ; INCLUDE PROGRAM FILES
     INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
-    INCLUDE 'EA_CODES.X68'  ; includes ea code disassembly
+    
     
     ; CLEAR REGISTERS
     CLR     D0          ; clears register D0
@@ -332,6 +332,8 @@ EADD    DS.B    8       ; ending address storage
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
 *------------------------ EXTERNAL REFERENCES --------------
+
+
 
 
 *~Font name~Courier New~

@@ -3,9 +3,12 @@
 * Date       :  10/30/2020
 * Description:  Handles all required Op-codes
 *-----------------------------------------------------------
-START:              ORG    $1000                         ; first instruction of program
 
 
+*START:              ORG    $1000                         ; first instruction of program
+
+                    INCLUDE     'EA_Codes.X68',0
+                    INCLUDE     'HardwarePirates.X68',0
 
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
@@ -17,7 +20,7 @@ START:              ORG    $1000                         ; first instruction of 
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
                     *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
-                    MOVE.L      #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
+                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
                     *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
@@ -776,13 +779,13 @@ Invalid_Instruction
                     TRAP        #15
                     *BRA         NOW
                     
-                     INCLUDE     'EA_Codes.X68',0
-                    *INCLUDE     'HardwarePirates.X68',0
-                    
+                                        
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
+
 
 
 
