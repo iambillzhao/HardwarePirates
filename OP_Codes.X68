@@ -7,8 +7,8 @@
 
 *START:              ORG    $1000                         ; first instruction of program
 
-                    INCLUDE     'EA_Codes.X68',0
-                    INCLUDE     'HardwarePirates.X68',0
+                    *INCLUDE     'EA_Codes.X68',0
+                    *INCLUDE     'HardwarePirates.X68',0
 
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
@@ -778,12 +778,15 @@ Invalid_Instruction
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
                     *BRA         NOW
-                    
-                                        
+                    NOP
+                    INCLUDE     'EA_Codes.X68',0
+                    NOP
+                    INCLUDE     'HardwarePirates.X68',0                   
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 

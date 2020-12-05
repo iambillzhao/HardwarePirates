@@ -11,7 +11,7 @@ START:                  ; first instruction of program
 
 *---------------------- PROGRAM SET ------------------------
     ; INCLUDE PROGRAM FILES
-    INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
+    *INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
     
     
     ; CLEAR REGISTERS
@@ -176,7 +176,7 @@ NOW:
     MULU    #6,D4       ; gets offset
     
     CMPA.L  A6,A5       ; compares addresses
-    BGT     RTS         ; goes back to the main branch
+    BGT     BACK         ; goes back to the main branch
     
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
@@ -200,9 +200,9 @@ S00:
 S0100:
     CLR     D4          ; clears data register D4
     MOVE.L  D7,D4       ; copies from D7 to D4
-    CMP.L   #$0100111001110101,D4 ; compares to RTS
+    CMP.L   #%0100111001110101,D4 ; compares to RTS
     BEQ     OP_RTS      ; redirects to RTS
-    CMP.L   #$0100111001110001,D4 ; compares to NOP
+    CMP.L   #%0100111001110001,D4 ; compares to NOP
     BEQ     OP_NOP      ; redirects to NOP
     ASL.B   #4,D4       ; shifts 4 of D4
     CMP.W   #$1110,D4   ; compares to JSR unique bits
@@ -213,7 +213,7 @@ S0100:
     BEQ     OP_MOVEM    ; redirects to MOVEM
     CMP.W   #$1100,D4   ; compares to MOVEM unique bits
     BEQ     OP_MOVEM    ; redirects to MOVEM
-    BRA     LEA         ; redirects to LEA otherwise
+    BRA     OP_LEA         ; redirects to LEA otherwise
 
 ; for BRA,BCC (BLT,BGE,BEQ)
 S0110:
@@ -321,7 +321,11 @@ SADD    DS.B    8       ; starting address storage
 
 EADD    DS.B    8       ; ending address storage
 
-    END    START        ; last line of source
+        NOP
+        INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
+   
+
+         END    START        ; last line of source
 
 
 *------------------------ EXTERNAL REFERENCES --------------
@@ -332,6 +336,7 @@ EADD    DS.B    8       ; ending address storage
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
 *------------------------ EXTERNAL REFERENCES --------------
+
 
 
 
