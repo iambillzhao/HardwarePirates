@@ -7,9 +7,6 @@
 
 *START:              ORG    $1000                         ; first instruction of program
 
-                    *INCLUDE     'EA_Codes.X68',0
-                    *INCLUDE     'HardwarePirates.X68',0
-
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
@@ -20,7 +17,7 @@
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
                     *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
-                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
+*                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
                     *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
@@ -761,25 +758,25 @@ BRA_Message         LEA         BRA_Output,A1           ; loading BRA message in
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code
+                    *BRA         EA_Branch               ; finish op-code
                 
 BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code   
+                    *BRA         EA_Branch               ; finish op-code   
 
 BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code    
+                    *BRA         EA_Branch               ; finish op-code    
 
 BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code
+                    *BRA         EA_Branch               ; finish op-code
                     
                 
 *------------------ End of Branch  -------------------------
@@ -847,14 +844,12 @@ Invalid_Instruction
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
                     *BRA         NOW
-                    NOP
-                    INCLUDE     'EA_Codes.X68',0
-                    NOP
-                    INCLUDE     'HardwarePirates.X68',0                   
+             
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 

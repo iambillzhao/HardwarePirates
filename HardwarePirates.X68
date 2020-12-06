@@ -222,7 +222,7 @@ S1100:
     BEQ     OP_MULS     ; redirects to MULS
     CMP.W   #$1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
-    BRA     OP_AND      ; redirects to AND otherwise
+*    BRA     OP_AND      ; redirects to AND otherwise
 
 ; for ADD
 S1101:
@@ -324,6 +324,7 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
 
 
 
