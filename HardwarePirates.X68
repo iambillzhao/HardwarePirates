@@ -61,8 +61,7 @@ BEG:
     ; ADDRESS CHECKS
     ANDI.B  #1,D2       ; checks if it is odd
     BNE     INVALIDADD  ; invalid if odd, error
-    
-    MOVE.L  D3,D2
+    MOVE.L  D3,D2       ; moves starting address to D2
     CLR     D3          ; clears D3 for ending address
     
 END:
@@ -89,7 +88,12 @@ END:
     BNE     INVALIDADD  ; invalid if odd, error
     CMP.L   D3,D5       ; checks if the ending address is less
     BGT     INVALIDADD  ; ending address is less, invalid
+    MOVE.L  A6,D3       ; moves ending address to D3
     
+    ; BEGIN DISASSEMBLY PROCESS
+    LEA     DISBEG,A1   ; loads message to A1
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; displays message
     JSR     NOW         ; continues to disassembly
     BRA     ASK         ; program starts to loop
     
@@ -166,8 +170,8 @@ NOW:
     LSR.W   D0,D4       ; shifts D4 by 12
     MULU    #6,D4       ; gets offset
     
-    CMPA.L  A6,A5       ; compares addresses
-    BGT     BACK        ; goes back to the main branch
+    CMP     D3,D2       ; comapres curr and ending address
+    BGT     ASK         ; disassembly completed
     
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
@@ -175,14 +179,36 @@ NOW:
     BRA     CON         ; jumps to the continue branch
 
 CON:
+    ; ADDS NEXT LINE CHARACTER
     LEA     NEXTLINE,A1 ; moves next line
     MOVE.B  #14,D0      ; sets to task 14
     TRAP    #15         ; trap 15
+ 
+    ; INCREMENT ADDRESS
     ADD.W   #2,D2       ; increment address by 2
     MOVE.L  D2,A0       ; copies data from D2 to A0
     MOVE.W  (A0),D0     ; copies data from A0 to D0
     MOVE.L  D0,A0       ; moves copied data to A0
+    
+    ; CHECKS ITERATIVE INPUT
+    ADD.B   #1,D7       ; adds 1 to line counter
+    CMP.B   #15,D7      ; comapres with 15
+    BGT     OVER        ; greater than 15, branch
     BRA     NOW         ; continues to the next code
+
+OVER:
+    ; RESET LINE COUNTER
+    CLR     D7          ; clears line counter
+    
+    ; ASKS FOR CONTINUATION
+    LEA     DISCON,A1   ; loads continue message
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; trap 15
+    MOVE.B  #5,D0       ; sets to task 5
+    TRAP    #15         ; trap 15
+    
+    ; CONTINUE DISASSEMBLY
+    BRA     NOW         ; branch to the next code
 
 OPCODES:
     JMP     S00         ; for MOVE
@@ -244,7 +270,8 @@ S1100:
     BEQ     OP_MULS     ; redirects to MULS
     CMP.W   #$1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
-    BRA     OP_AND      ; redirects to AND otherwise
+    ; TODO: NOT YET IMPLEMENTED
+    ; BRA     OP_AND      ; redirects to AND otherwise
 
 ; for ADD
 S1101:
@@ -312,24 +339,24 @@ CR      EQU     $0D
 LF      EQU     $0A
 
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
-        DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0        
+        DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0      
 
 INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
+DISBEG   DC.B   CR,LF,'STARTING DISASSEMBLY PROCESS:',CR,LF,0
+
 NEXTLINE DC.B   CR,LF,0
 
-INPUTCON DC.B   'TYPE ANY CHARACTER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',CR,LF,0
+INPUTCON DC.B   CR,LF,'DISASSEMBLY COMPLETED!',CR,LF
+         DC.B   'PRESS ENTER TO START AGAIN, "Q" TO QUIT: ',CR,LF,0
 
-DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',CR,LF,0
+DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',0
         
 INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF,0
 
 GOODBYE DC.B    CR,LF,'Thank you for using our disassembler!',CR,LF,0
-
-
-*------------------------ END OF I/O -----------------------
 
 
 *------------------------ VARIABLES ------------------------
@@ -352,17 +379,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-
-
-
-
-
-
-
-
-
-
-
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
