@@ -807,10 +807,10 @@ Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
 MOVE_Output         DC.W        'MOVE',0
 MOVEM_Output        DC.W        'MOVEM',0
-NOP_Output          DC.W        'NOP',0
+NOP_Output          DC.W        'NOP',CR,LF,0
 LEA_Output          DC.W        'LEA     ',0
 ADD_Output          DC.W        'ADD',0
-JSR_Output          DC.W        'JSR',0
+JSR_Output          DC.W        'JSR',CR,LF,0
 NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
@@ -841,9 +841,9 @@ EA_MULS
 
 
 Invalid_Instruction 
-                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
-                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
-                    TRAP        #15
+                    *LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
+                    *MOVE.B      #14,D0                  ; Loading the invalid input message into D0
+                    *TRAP        #15
                     RTS
              
                     
