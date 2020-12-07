@@ -44,6 +44,7 @@ BEG:
     ; CATCH INPUT, CONVERT TO ASCII
     MOVE.B  #2,D0       ; sets to task 2
     LEA     SADD,A1     ; loads starting address to A1
+    *LEA     SADD,A0     ;       Testing
     TRAP    #15         ; gets input from the user
     
     ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
@@ -52,13 +53,20 @@ BEG:
     CMP.W   #$0008,D1   ; compares 8 to D1
     BGT     INVALIDADD  ; triggers program's invalid branch
     JSR     BCON        ; loops to convert ASCII to hex
+    MOVE.L  D3,A0       ;         Testing
+    
+    MOVE.W  (A0),D0    ; copies the data from SP to D0
+    MOVE.L  D0,A0
+    
+                        ; Data from the register # of A0
     MOVEA.L D3,A5       ; moves temporary address to A5 for start
     MOVE.L  D3,D5       ; moves the value of D3 to D5 for checks
     
     ; ADDRESS CHECKS
-    ANDI.B  #1,D3       ; checks if it is odd
+    ANDI.B  #1,D2       ; checks if it is odd
     BNE     INVALIDADD  ; invalid if odd, error
     
+    MOVE.L  D3,D2
     CLR     D3          ; clears D3 for ending address
     
 END:
@@ -153,8 +161,9 @@ BACK:
     
 *-------------------- DISASSEMBLY --------------------------
 NOW:
-    ; D4 TO STORE CODE TO DISASSEMBLE
-    MOVE.W  D7,D4       ; moves code to D4
+    ; A0 TO STORE CODE TO DISASSEMBLE
+    *MOVE.W  D7,A0       ; moves code to A0
+    MOVE.W  A0,D4
     CLR     D0          ; clears D0
     
     ; GETS MOST SIGNIFICANT 4 BYTES
@@ -169,14 +178,35 @@ NOW:
     LEA     OPCODES,A3  ; loads op-code jump table
     JSR     00(A3,D4)   ; jsr using word processes
 
+CON:
+    LEA     NEXTLINE,A1
+    MOVE.B  #14,D0
+    TRAP    #15
+    ADD.W   #2,D2
+    MOVE.L  D2,A0
+    MOVE.W  (A0),D0
+    MOVE.L  D0,A0
+    BRA     NOW
+
 OPCODES:
+    JMP     S00         ; for MOVE
+    JMP     S00         ; for MOVE
+    JMP     S00         ; for MOVE
     JMP     S00         ; for MOVE
     JMP     S0100       ; for NOT,JSR,RTS,NOP,MOVEM,LEA
     JMP     S0110       ; for BRA,BCC (BLT,BGE,BEQ)
+    JMP     SS
+    JMP     SS
     JMP     S1001       ; for SUB
+    JMP     SS
+    JMP     SS
     JMP     S1100       ; for MULS,AND
     JMP     S1101       ; for ADD
     JMP     S1110       ; for SHIFT (LSL,ASR)
+    JMP     SS
+
+SS:
+    BRA     INVALID
 
     
 ; for MOVE
@@ -187,7 +217,7 @@ S00:
 ; for NOT,JSR,RTS,NOP,MOVEM,LEA
 S0100:
     CLR     D4          ; clears data register D4
-    MOVE.L  D7,D4       ; copies from D7 to D4
+    MOVE.L  A0,D4       ; copies from D7 to D4
     CMP.L   #%0100111001110101,D4 ; compares to RTS
     BEQ     OP_RTS      ; redirects to RTS
     CMP.L   #%0100111001110001,D4 ; compares to NOP
@@ -214,7 +244,7 @@ S1001:
     BRA     OP_SUB      ; redirects to SUB
 
 ; for MULS,AND
-S1100:
+S1100:  
     CLR     D4          ; clears data register D4
     MOVE.L  D7,D4       ; copies from D7 to D4
     ASL.B   #6,D4       ; shifts by 6 bits
@@ -292,6 +322,8 @@ INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
+NEXTLINE DC.B   CR,LF,0
+
 INPUTCON DC.B   'TYPE ANY CHARACTER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',CR,LF,0
 
 DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',CR,LF,0
@@ -324,6 +356,10 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
+
+
+
 
 
 

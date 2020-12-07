@@ -78,7 +78,7 @@ MOVE_Dest_Reg       CLR         D4
 *----------------------  MOVE: Send to EA  -------------------
 
                     JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
-                    
+                    RTS
 *----------------------  MOVE: Functions  --------------------
 
 MOVE_Byte           LEA         Output_Byte,A1          ; Display '.B' for MOVE size
@@ -126,6 +126,7 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
+                    RTS
 *----------------------  End of NOP  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
@@ -213,7 +214,7 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     *CLR         D4                      ; Clear register D4
 
 *----------------------  LEA: Send to EA  --------------------------
-                    BRA         EA_LEA                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
+                    RTS                                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
                     
                     
                     
@@ -776,7 +777,7 @@ BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message in
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code
+*                    BRA         EA_Branch               ; finish op-code
                     
                 
 *------------------ End of Branch  -------------------------
@@ -833,22 +834,24 @@ SRC_REGISTER        DS.W        1                       ; Storage for the source
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
 DEST_REGISTER       DS.W        1                       ; Storage for the destination EA register ID
 
-EA_LEA 
+  
 EA_ADD
 EA_SUB
 EA_MULS
 
 
 Invalid_Instruction 
-                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
-                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
-                    TRAP        #15
-                    *BRA         NOW
+                    *LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
+                    *MOVE.B      #14,D0                  ; Loading the invalid input message into D0
+                    *TRAP        #15
+                    BRA         NOW
              
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
+
 
 
 
