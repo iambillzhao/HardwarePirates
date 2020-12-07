@@ -841,15 +841,17 @@ EA_MULS
 
 
 Invalid_Instruction 
-                    *LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
-                    *MOVE.B      #14,D0                  ; Loading the invalid input message into D0
-                    *TRAP        #15
-                    BRA         NOW
+                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
+                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
+                    TRAP        #15
+                    RTS
              
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
+
 
 
 
