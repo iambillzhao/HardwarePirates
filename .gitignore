@@ -1,7 +1,2 @@
-EA_Codes.L68
-EA_Codes.S68
-HardwarePirates*.L68
-HardwarePirates*.S68
-OP_Codes.L68
-OP_Codes.S68
-test.L68
+*.L68
+*s.S68
