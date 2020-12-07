@@ -7,9 +7,6 @@
 
 *START:              ORG    $1000                         ; first instruction of program
 
-                    *INCLUDE     'EA_Codes.X68',0
-                    *INCLUDE     'HardwarePirates.X68',0
-
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
@@ -20,7 +17,7 @@
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
                     *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
-                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
+*                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
                     *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
@@ -81,7 +78,7 @@ MOVE_Dest_Reg       CLR         D4
 *----------------------  MOVE: Send to EA  -------------------
 
                     JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
-                    
+                    RTS
 *----------------------  MOVE: Functions  --------------------
 
 MOVE_Byte           LEA         Output_Byte,A1          ; Display '.B' for MOVE size
@@ -129,6 +126,7 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
+                    RTS
 *----------------------  End of NOP  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
@@ -216,7 +214,7 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     *CLR         D4                      ; Clear register D4
 
 *----------------------  LEA: Send to EA  --------------------------
-                    BRA         EA_LEA                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
+                    RTS                                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
                     
                     
                     
@@ -761,25 +759,25 @@ BRA_Message         LEA         BRA_Output,A1           ; loading BRA message in
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code
+                    *BRA         EA_Branch               ; finish op-code
                 
 BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code   
+                    *BRA         EA_Branch               ; finish op-code   
 
 BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code    
+                    *BRA         EA_Branch               ; finish op-code    
 
 BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         EA_Branch               ; finish op-code
+*                    BRA         EA_Branch               ; finish op-code
                     
                 
 *------------------ End of Branch  -------------------------
@@ -836,7 +834,7 @@ SRC_REGISTER        DS.W        1                       ; Storage for the source
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
 DEST_REGISTER       DS.W        1                       ; Storage for the destination EA register ID
 
-EA_LEA 
+  
 EA_ADD
 EA_SUB
 EA_MULS
@@ -846,15 +844,17 @@ Invalid_Instruction
                     LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
-                    *BRA         NOW
-                    NOP
-                    INCLUDE     'EA_Codes.X68',0
-                    NOP
-                    INCLUDE     'HardwarePirates.X68',0                   
+                    RTS
+             
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
+
+
+
+
 
 
 
