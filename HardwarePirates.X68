@@ -215,14 +215,15 @@ OVER:
     BRA     NOW         ; branch to the next code
 
 OPCODES:
-    JMP     S00         ; for MOVE
-    JMP     S00         ; for MOVE
-    JMP     S00         ; for MOVE
-    JMP     S00         ; for MOVE
-    JMP     S0100       ; for NOT,JSR,RTS,NOP,MOVEM,LEA
+    JMP     S00         ; for MOVE 0000
+    JMP     S00         ; for MOVE 0001
+    JMP     S00         ; for MOVE 0010
+    JMP     S00         ; for MOVE 0011
+    JMP     S0100       ; for NOT,JSR,RTS,NOP,MOVEM,LEA 
+    JMP     SS          ;          0101
     JMP     S0110       ; for BRA,BCC (BLT,BGE,BEQ)
-    JMP     SS          ; for INVALID
-    JMP     SS          ; for INVALID
+    JMP     SS
+    JMP     SS
     JMP     S1001       ; for SUB
     JMP     SS          ; for INVALID
     JMP     SS          ; for INVALID
@@ -275,7 +276,7 @@ S1100:
     CMP.W   #$1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
     ; TODO: NOT YET IMPLEMENTED
-    ; BRA     OP_AND      ; redirects to AND otherwise
+    BRA     OP_AND      ; redirects to AND otherwise
 
 ; for ADD
 S1101:
@@ -385,6 +386,8 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~

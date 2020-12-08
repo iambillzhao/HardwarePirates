@@ -1,7 +1,13 @@
-*-------------------------  OP-Codes  --------------------------
-* Written by :  Anna Jennings, Lucy Chi
+*-------------------------  EA-Codes  ----------------------
+* Written by :  Lawrence Fiesta
 * Date       :  10/30/2020
-* Description:  Handles all required Op-codes
+* Description:  Handles all required EA-codes
+*-----------------------------------------------------------
+*-----------------------------------------------------------
+* Effective address decode
+* A4 loads the jump table of EA
+* A5 loads the jump table of Hexadecimal
+* D4(Mode), D5(Register)
 *-----------------------------------------------------------
 
 EA_DECODE  		LEA     EA_JMP,A4       ; loads ea jump table in A4
@@ -353,6 +359,7 @@ Pound           DC.W    '#',0
 *~Font size~12~
 *~Tab type~1~
 *~Tab size~4~
+
 
 *~Font name~Courier New~
 *~Font size~10~
