@@ -412,8 +412,7 @@ SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
-
-*                    BRA         EA_SUB                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
+ 
                     JSR         EA_DECODE
                     RTS
        
@@ -452,7 +451,6 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
                     
-*                    BRA         EA_SUB                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
                     JSR         EA_DECODE
                     RTS
 
@@ -693,7 +691,6 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     JSR         EA_DECODE
                     RTS
 
-*                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
 
 *--------------------- AND Dn + <ea> --> <ea>  ----------------------------------
 AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
@@ -730,7 +727,6 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
                     
-*                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
                     JSR         EA_DECODE
                     RTS
                     
@@ -1052,9 +1048,9 @@ LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
 L_Output            DC.W        'L',0
-
+DATA                DC.W        ' DATA ',0
 Next_Line           DC.W        CR,LF,0
-
+Space               DC.W        ' ',0
 Comma               DC.W        ',',0
 
 
@@ -1070,10 +1066,18 @@ EA_MULS
 
 
 Invalid_Instruction 
-                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
+                    MOVE.L      A0,D1
+                    MOVE.B      #3,D0
+                    TRAP        #15
+
+                    LEA         Data,A1                 ; Displaying the Data part of Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
-                    BRA         NOW
+                    
+                    MOVE.B      #1,D0
+                    TRAP        #15
+                    
+                    BRA         CON
                                   
                     
                     SIMHALT                             ; stop code if failed input
