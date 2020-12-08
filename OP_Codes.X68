@@ -261,7 +261,7 @@ OP_ADD              CLR         D4
                     BRA         ADD_Op_mode_Check       ; branch to check the Op-mode 
 
 *------------------------  ADD: Diplay ADD  ----------------------
-OP_ADD              LEA         ADD_Output,A1           ; Display 'ADD'
+ADD_Dis             LEA         ADD_Output,A1           ; Display 'ADD'
                     MOVE.B      #14,D0                  ; trap rask 14 is loaded into D0
                     TRAP        #15                     ; trap 15 is for output
 *                    TRAP        #15
