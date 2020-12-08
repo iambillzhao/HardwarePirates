@@ -179,14 +179,40 @@ NOW:
     BRA     CON         ; jumps to the continue branch
 
 CON:
-    LEA     NEXTLINE,A1
-    MOVE.B  #14,D0
-    TRAP    #15
-    ADD.W   #2,D2
-    MOVE.L  D2,A0
-    MOVE.W  (A0),D0
-    MOVE.L  D0,A0    
-    BRA     NOW
+    ; ADDS NEXT LINE CHARACTER
+    LEA     NEXTLINE,A1 ; moves next line
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; trap 15
+ 
+    ; INCREMENT ADDRESS
+    ADD.W   #2,D2       ; increment address by 2
+    MOVE.L  D2,A0       ; copies data from D2 to A0
+    MOVE.W  (A0),D0     ; copies data from A0 to D0
+    MOVE.L  D0,A0       ; moves copied data to A0
+    
+    ; CHECKS ITERATIVE INPUT
+    ADD.B   #1,D7       ; adds 1 to line counter
+    CMP.B   #15,D7      ; comapres with 15
+    BGT     OVER        ; greater than 15, branch
+    BRA     NOW         ; continues to the next code
+
+OVER:
+    ; RESET LINE COUNTER
+    CLR     D7          ; clears line counter
+    
+    ; ASKS FOR CONTINUATION
+    LEA     DISCON,A1   ; loads continue message
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; trap 15
+    MOVE.B  #5,D0       ; sets to task 5
+    TRAP    #15         ; trap 15
+    CMP.B   #'Q',D1     ; if input is Q
+    BEQ     BYE         ; aborts program
+    CMP.B   #'q',D1     ; if input is q
+    BEQ     BYE         ; aborts program
+    
+    ; CONTINUE DISASSEMBLY
+    BRA     NOW         ; branch to the next code
 
 OPCODES:
     JMP     S00         ; for MOVE
@@ -281,6 +307,8 @@ ASK:
     ; QUIT CONDITION
     CMP.B   #'Q',D1     ; if input is Q
     BEQ     BYE         ; aborts program
+    CMP.B   #'q',D1     ; if input is q
+    BEQ     BYE         ; aborts program
     BRA     BEG         ; otherwise, loops to the beginning
 
 
@@ -331,7 +359,7 @@ NEXTLINE DC.B   CR,LF,0
 INPUTCON DC.B   CR,LF,'DISASSEMBLY COMPLETED!',CR,LF
          DC.B   'PRESS ENTER TO START AGAIN, "Q" TO QUIT: ',CR,LF,0
 
-DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',0
+DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY, "Q" TO QUIT: ',0
         
 INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF,0
 
@@ -358,20 +386,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-<<<<<<< HEAD
-
-
-
-
-
-
-
-
-
-
-
-=======
->>>>>>> 970dc9b4d99505a759f3dd49cab09be291bd27c1
 
 *~Font name~Courier New~
 *~Font size~10~
