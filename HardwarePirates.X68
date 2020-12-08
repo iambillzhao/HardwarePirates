@@ -275,8 +275,7 @@ S1100:
     BEQ     OP_MULS     ; redirects to MULS
     CMP.W   #$1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
-    ; TODO: NOT YET IMPLEMENTED
-    ; BRA     OP_AND      ; redirects to AND otherwise
+    BRA     OP_AND      ; redirects to AND otherwise
 
 ; for ADD
 S1101:
