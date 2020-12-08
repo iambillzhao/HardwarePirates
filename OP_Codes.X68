@@ -3,9 +3,8 @@
 * Date       :  10/30/2020
 * Description:  Handles all required Op-codes
 *-----------------------------------------------------------
-START:              ORG    $1000                         ; first instruction of program
 
-
+*START:              ORG    $1000                         ; first instruction of program
 
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
@@ -17,7 +16,7 @@ START:              ORG    $1000                         ; first instruction of 
                     *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
                     *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
                     *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
-                    MOVE.L      #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
+*                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
                     *BRA         OP_LEA
 
 *----------------------  MOVE: Display MOVE -----------------
@@ -78,7 +77,7 @@ MOVE_Dest_Reg       CLR         D4
 *----------------------  MOVE: Send to EA  -------------------
 
                     JSR         EA_DECODE               ; send to the EA with D4 holding the Destination and D5 holding Source  
-                    
+                    RTS
 *----------------------  MOVE: Functions  --------------------
 
 MOVE_Byte           LEA         Output_Byte,A1          ; Display '.B' for MOVE size
@@ -126,6 +125,7 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
+                    RTS
 *----------------------  End of NOP  ----------------------------
 *Performs no operation
 *-----------------------------------------------------------------
@@ -213,7 +213,7 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     *CLR         D4                      ; Clear register D4
 
 *----------------------  LEA: Send to EA  --------------------------
-                    BRA         EA_LEA                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
+                    RTS                                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
                     
                     
                     
@@ -808,8 +808,69 @@ MOVEM_Long          LEA         Output_Long,A1          ; Display '.L' for MOVEM
 *D5 holds the direction bit
 *-----------------------------------------------------------------         
 
+*------------------------  Branch Group  -------------------
+* Written by :  Anna Jennings
+* Date       :  11/16/2020
+* Description:  Prints BRA, BCC, BLT, BGE, or BEQ
+*-----------------------------------------------------------
+
+                    MOVE.L      #%0110110011111000,A0   ; Testing info
+                
+*--------------- Branch: Get Branch Type  -----------------           
+
+OP_Branch           MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
+                    AND.L       #%0000111100000000,D4   ; Isolate Branch type 
+                    LSR.L       #8,D4                   ; rotate bits to isolate branch type in msb
+
+*---------------  Branch: Display Type  -------------------
+                
+                    CMP.L       #%0000000000000000,D4   ; checking if BRA
+                    BEQ         BRA_Message             ; branch to print out BRA
+                
+                    CMP.L       #%0000000000001101,D4   ; checking if BLT
+                    BEQ         BLT_Message             ; branch to print out BLT
+                
+                    CMP.L       #%0000000000001100,D4   ; checking if BGE
+                    BEQ         BGE_Message             ; branch to print out BGE
+                
+                    CMP.L       #%0000000000000111,D4   ; checking if BEQ
+                    BEQ         BEQ_Message             ; branch to print out BEQ
+                
+                    BRA         Invalid_Instruction     ; branch if invalid instruction
+                
+*---------------  Branch: Functions  ---------------------
+BRA_Message         LEA         BRA_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    *BRA         EA_Branch               ; finish op-code
+                
+BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    *BRA         EA_Branch               ; finish op-code   
+
+BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+                    *BRA         EA_Branch               ; finish op-code    
+
+BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
+                    MOVE.B      #14,D0                  ; trap task 14 loadinto D0
+                    TRAP        #15                     ; output BRA
+                
+*                    BRA         EA_Branch               ; finish op-code
+                    
+                
+*------------------ End of Branch  -------------------------
+*The branch condition has been printed to the screen
+*no remaining data is stored
+*-----------------------------------------------------------
 
 
+*---------------------  Next OP-Code  -----------------------
 
 
                     SIMHALT                             ; halt simulator
@@ -837,6 +898,10 @@ AND_Output          DC.W        'AND',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
 MULS_Output         DC.W        'MULS',0
+BRA_Output          DC.W        'BRA  ',0
+BLT_Output          DC.W        'BLT  ',0
+BGE_Output          DC.W        'BGE  ',0
+BEQ_Output          DC.W        'BEQ  ',0
 LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
@@ -852,7 +917,7 @@ SRC_REGISTER        DS.W        1                       ; Storage for the source
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
 DEST_REGISTER       DS.W        1                       ; Storage for the destination EA register ID
 
-EA_LEA 
+  
 EA_ADD
 EA_SUB
 EA_MULS
@@ -860,23 +925,14 @@ EA_AND
 
 
 Invalid_Instruction 
-                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
-                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
-                    TRAP        #15
-                    *BRA         NOW
-                    
-                     INCLUDE     'EA_Codes.X68',0
-                    *INCLUDE     'HardwarePirates.X68',0
-                    
+*                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
+*                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
+*                    TRAP        #15
+                    BRA         NOW
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
-
-
-
-
-
 
 
 *~Font name~Courier New~
