@@ -15,27 +15,11 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
-    ADD.B     D1,(A1)
-    ADD.B     D1,(A1)+
-    ADD.B     D1,-(A1)
-    ADD.B     (A1),D1
-    ADD.B     (A1)+,D1
-    ADD.B     -(A1),D1
-    ADD.W     D1,D2
-    ADD.W     D1,(A1)
-    ADD.W     D1,(A1)+
-    ADD.W     D1,-(A1)
-    ADD.W     (A1),D1
-    ADD.W     (A1)+,D1
-    ADD.W     -(A1),D1
-    ADD.L     D1,D2
-    ADD.L     D1,(A1)
-    ADD.L     D1,(A1)+
-    ADD.L     D1,-(A1)
-    ADD.L     (A1),D1
-    ADD.L     (A1)+,D1
-    ADD.L     -(A1),D1
-
+    MULS.W    D0,D1
+    MULS.W    (A0),D1
+    MULS.W    -(A0),D1
+    MULS.W    (A0)+,D1
+    
 * Put program code here
 
     SIMHALT             ; halt simulator
@@ -43,6 +27,7 @@ NOP
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 
 

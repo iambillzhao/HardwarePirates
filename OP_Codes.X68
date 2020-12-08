@@ -478,22 +478,34 @@ OP_MULS             LEA         MULS_Output,A1          ; Display 'MULS'
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
                     LSR.W       D0,D7                   ; Isolate the remainder bits    
                     MOVE.W      D7,SRC_MODE             ; Copy bits to src dest mode
+                    MOVE.W      D7,D4
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
                     LSL.W       D0,D7                   ; Cut up to bit 2
                     LSR.W       D0,D7                   ; Isolate the remainder bits         
                     MOVE.W      D7,SRC_REGISTER         ; Copy bits to src dest register
+                    MOVE.W      D7,D5
+                
+                    JSR         EA_DECODE
+                    
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15                
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
                     LSL.W       #4,D7                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits       
+                    LSR.L       D0,D7                   ; Isolate the remainder bits       
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode dest register
-                    
+                    MOVE.W      #0,D4
+                    MOVE.W      D7,D5
                    
-                    BRA         EA_MULS                 ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+                    *BRA         EA_MULS                 ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+                    JSR         EA_DECODE
+                    RTS
+                    
                     
 *---------------------  End of MULS --------------------------------
 *MULS has been printed 
@@ -1039,7 +1051,7 @@ JSR_Output          DC.W        'JSR',0
 NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB     ',0
-MULS_Output         DC.W        'MULS',0
+MULS_Output         DC.W        'MULS     ',0
 BRA_Output          DC.W        'BRA  ',0
 BLT_Output          DC.W        'BLT  ',0
 BGE_Output          DC.W        'BGE  ',0
@@ -1066,19 +1078,19 @@ EA_MULS
 
 
 Invalid_Instruction 
-                    MOVE.L      A0,D1
+                    MOVE.L      D2,D1
                     MOVE.B      #3,D0
                     TRAP        #15
 
                     LEA         Data,A1                 ; Displaying the Data part of Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
-                    
+
+                    MOVE.L      (A0),A1
                     MOVE.B      #1,D0
                     TRAP        #15
-                    
-                    BRA         CON
-                                  
+
+                    BRA         CON                                  
                     
                     SIMHALT                             ; stop code if failed input
                         
@@ -1099,6 +1111,7 @@ Invalid_Instruction
 
 
                     
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
