@@ -206,6 +206,10 @@ OVER:
     TRAP    #15         ; trap 15
     MOVE.B  #5,D0       ; sets to task 5
     TRAP    #15         ; trap 15
+    CMP.B   #'Q',D1     ; if input is Q
+    BEQ     BYE         ; aborts program
+    CMP.B   #'q',D1     ; if input is q
+    BEQ     BYE         ; aborts program
     
     ; CONTINUE DISASSEMBLY
     BRA     NOW         ; branch to the next code
@@ -302,6 +306,8 @@ ASK:
     ; QUIT CONDITION
     CMP.B   #'Q',D1     ; if input is Q
     BEQ     BYE         ; aborts program
+    CMP.B   #'q',D1     ; if input is q
+    BEQ     BYE         ; aborts program
     BRA     BEG         ; otherwise, loops to the beginning
 
 
@@ -352,7 +358,7 @@ NEXTLINE DC.B   CR,LF,0
 INPUTCON DC.B   CR,LF,'DISASSEMBLY COMPLETED!',CR,LF
          DC.B   'PRESS ENTER TO START AGAIN, "Q" TO QUIT: ',CR,LF,0
 
-DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',0
+DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY, "Q" TO QUIT: ',0
         
 INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF,0
 
