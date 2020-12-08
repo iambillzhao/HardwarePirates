@@ -4,7 +4,6 @@
 * Description:  Handles all required Op-codes
 *-----------------------------------------------------------
 
-
 *START:              ORG    $1000                         ; first instruction of program
 
 *-------------------------  MOVE  --------------------------
@@ -536,8 +535,96 @@ NOT_Long            LEA         Output_Long,A1          ; Display '.L' for MOVE 
 *----------------------  End of NOT  -----------------------------
 *NOT and size have been printed
 *D4 holds the effective address (mode, register)
-*-----------------------------------------------------------------                    
+*----------------------------------------------------------------- 
 
+
+
+*------------------------  AND  ----------------------------------
+* Written by :  Lexun Chi
+* Date       :  12/2/2020
+* Description:  AND op-code
+*-----------------------------------------------------------------
+
+                    MOVE.L      #%1100000100010000,A0   ; Testing Info
+
+*------------------------  AND: Diplay AND  ----------------------     
+                    LEA         AND_Output,A1           ; Display 'AND' 
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output  
+                    
+                    MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
+                    AND.L       #%0000000100000000,D4   ; Clear all bits except for Bit 8
+                    LSR.L       #8,D4                   ; access Bit 8, do this by shifting the number the right 8 bits
+                    
+                    CMP.B       #%00,D4                 ; Bit 8 = 0
+                    BEQ         AND_DN                   
+                    
+                    CMP.B       #%01,D4                 ; Bit 8 = 1
+                    BEQ         AND_EA
+                    
+*--------------------- AND <ea> + Dn --> Dn  ----------------------------------
+AND_DN              MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+
+                    MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    
+                    MOVE.W      D7,SRC_MODE             ; Copy bits to decode source mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 2
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                
+                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
+                
+                    MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    
+                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
+
+                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
+
+*--------------------- AND Dn + <ea> --> <ea>  ----------------------------------
+AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
+                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+
+                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on   
+                    MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
+                    LSR.W       D0,D7                   ; Isolate the remainder bits
+
+                    MOVE.W      D7,DEST_MODE            ; Copy bits to decode destination mode
+                
+                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
+                    LSL.W       D0,D7                   ; Cut up to bit 2
+                    LSR.W       D0,D7                   ; Isolate the remainder bits            
+                    
+                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
+                    
+                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+                    
+                    
+*---------------------  End of AND  --------------------------------
+*AND has been printed 
+*SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER hold the corresponding data
+*------------------------------------------------------------------- 
+
+
+        
 
 *-------------------------  Shift (LSL, ASR)  --------------------------
 * Written by :  Anna Jennings
@@ -721,9 +808,6 @@ MOVEM_Long          LEA         Output_Long,A1          ; Display '.L' for MOVEM
 *D5 holds the direction bit
 *-----------------------------------------------------------------         
 
-
-
-
 *------------------------  Branch Group  -------------------
 * Written by :  Anna Jennings
 * Date       :  11/16/2020
@@ -789,8 +873,6 @@ BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message in
 *---------------------  Next OP-Code  -----------------------
 
 
-
-
                     SIMHALT                             ; halt simulator
                     
 *--------------------- EQUs ----------------------------------------
@@ -812,6 +894,7 @@ LEA_Output          DC.W        'LEA     ',0
 ADD_Output          DC.W        'ADD',0
 JSR_Output          DC.W        'JSR',0
 NOT_Output          DC.W        'NOT',0
+AND_Output          DC.W        'AND',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
 MULS_Output         DC.W        'MULS',0
@@ -838,31 +921,18 @@ DEST_REGISTER       DS.W        1                       ; Storage for the destin
 EA_ADD
 EA_SUB
 EA_MULS
+EA_AND
 
 
 Invalid_Instruction 
-                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
-                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
-                    TRAP        #15
-                    RTS
-             
+*                    LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
+*                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
+*                    TRAP        #15
+                    BRA         NOW
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 *~Font name~Courier New~
