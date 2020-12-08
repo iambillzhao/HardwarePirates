@@ -1,29 +1,38 @@
-*-------------------------  OP-Codes  --------------------------
+*-------------------------  OP-Codes  ----------------------
 * Written by :  Anna Jennings, Lucy Chi
 * Date       :  10/30/2020
 * Description:  Handles all required Op-codes
 *-----------------------------------------------------------
 
 
-*START:              ORG    $1000                         ; first instruction of program
+
 
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
 * Description:  Prints the MOVE EA
-*-----------------------------------------------------------                   
+*-----------------------------------------------------------
+                   
+*--------------------  MOVE: Instruction Check  ------------
+OP_MOVE             CLR         D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
+                    LSR.L       #6,D4                   ; stores source mode in D4
+                    
+                    BRA         MOVE_Dest_Check        ; branches to check the destination mode
 
-                    *MOVE.L      #%0010010111111000,A0   ; Testing info
-                    *MOVE.L      #%0010001000000010,A0   ; Testing info EA: D1,D2 (destination register 1, mode D) (source register 2, D)
-                    *MOVE.L      #%0010001001001010,A0   ; Testing info EA: A2,A1 (destination register 1, mode A) (source register 2, A)
-                    *MOVE.L      #%0100010111010111,A0   ; Testing LEA for EA: (A7),A2
-*                    MOVE.L       #%0010010011100111,A0   ; Testing addressing increment/decrement to output MOVE.L -(A7),(A2)+
-                    *BRA         OP_LEA
-
+                    CLR         D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0011000000000000,D4   ; clear all bits except the size     
+                    LSR.L       #8,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                    
+                    LSR.L       #4,D4
+                    
+                    BRA         MOVE_Size_Check              ; check proper size                   
+                
 *----------------------  MOVE: Display MOVE -----------------
-OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE' 
+MOVE_Dis            LEA         MOVE_Output,A1          ; Display 'MOVE' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
-                    TRAP        #15                     ; task 15 for output
+                    TRAP        #15                     ; task 15 for output                        
                     
                     
 *----------------------  MOVE: Get Size  --------------------
@@ -40,8 +49,6 @@ OP_MOVE             LEA         MOVE_Output,A1          ; Display 'MOVE'
 
                     CMP.B       #%10,D4                 ; checking if the size is Long
                     BEQ         MOVE_Long               ; Branch to Long Condition
-                    
-                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted
 
 MOVE_Dest_Reg       CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
@@ -100,6 +107,13 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
 
                     BRA         MOVE_Dest_Reg           ; return to code
                     
+MOVE_Dest_Check     CMP.L       #%001,D4                ; an invalid input
+                    BEQ         Invalid_Instruction     ; moves on to next instruction                    
+                    BRA         MOVE_Dis                ; move to check next part of instruction
+
+MOVE_Size_Check     CMP.B       #%00,D4
+                    BEQ         Invalid_Instruction
+                    BRA         MOVE_Dis
 
 *----------------------  End of MOVE  ----------------------------
 *Move and its size have been printed
@@ -139,7 +153,6 @@ OP_NOP              LEA         NOP_Output,A1           ; Display 'NOP'
 * Description:  Op-code: RTS
 *-----------------------------------------------------------  
 
-                    MOVE.L      #%0100111001110101,A0    ; Testing info 
  
 
 *-------------------------  Display RTS  ---------------------------------
@@ -164,10 +177,16 @@ OP_RTS              LEA         RTS_Output,A1           ; Display 'RTS'
 * Description:  Prints the LEA EA
 *-----------------------------------------------------------------
 
-                    MOVE.L      #%0100010111010111,A0   ; Testing Info
+*----------------------  LEA: Instruction check  -----------------
+OP_LEA              CLR         D4
+                    MOVE.L      A0,D4
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+                    BRA         LEA_Mode_Check
+
 
 *------------------------  LEA: Diplay LEA  ----------------------
-OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
+LEA_Dis             LEA         LEA_Output,A1           ; Display 'LEA'
                     MOVE.B      #14,D0                  ; trap rask 14 is loaded into D0
                     TRAP        #15                     ; trap 15 is for output
                       
@@ -206,17 +225,22 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
                     MOVE.L      #1,D4                   ; sets the mode to 001
                     MOVE.L      D7,D5                   ; moves the registration bits to D5
                     CLR         D7
-                    JSR         EA_DECODE                    
-                    
-                    *MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on  
-                    *AND.L       #%0000000000111111,D4   ; clearing all bits to isolate the effective address
-                    *MOVE.L      D4,D6                   ; copying the Effective address to D6
-                    *CLR         D4                      ; Clear register D4
+                   
 
 *----------------------  LEA: Send to EA  --------------------------
+                    JSR         EA_DECODE 
                     RTS                                  ; Send to the EA with D5 holding the register number, and D6 holding the effective address
                     
-                    
+*----------------------  LEA: Functions  ---------------------------
+LEA_Mode_Check      CMP.W       #%000,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%001,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%011,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%100,D4
+                    BEQ         Invalid_Instruction
+                    BRA         LEA_Dis
                     
 *---------------------  End of LEA  --------------------------------
 *LEA has been printed 
@@ -230,8 +254,6 @@ OP_LEA              LEA         LEA_Output,A1           ; Display 'LEA'
 * Date       :  11/23/2020
 * Description:  ADD op-code
 *-----------------------------------------------------------------
-
-*                    MOVE.L      #%110111001000000,A0   ; Testing Info
 
 *------------------------  ADD: Diplay ADD  ----------------------
 OP_ADD              LEA         ADD_Output,A1           ; Display 'ADD'
@@ -286,7 +308,6 @@ ADD_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5                   ; Copy bits to decode destination register
 
-*                    BRA         EA_ADD                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
                     JSR         EA_DECODE
                     RTS
 
@@ -325,7 +346,6 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
                     
-*                    BRA         EA_ADD                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
                     JSR         EA_DECODE
                     RTS
                     
@@ -341,7 +361,6 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 * Description:  SUB op-code
 *-----------------------------------------------------------------
 
-                    MOVE.L      #%100111001000000,A0   ; Testing Info
 
 *------------------------  SUB: Diplay SUB  ----------------------
 OP_SUB              LEA         SUB_Output,A1           ; Display 'SUB'
@@ -393,8 +412,7 @@ SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
-
-*                    BRA         EA_SUB                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
+ 
                     JSR         EA_DECODE
                     RTS
        
@@ -433,7 +451,6 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
                     
-*                    BRA         EA_SUB                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
                     JSR         EA_DECODE
                     RTS
 
@@ -449,8 +466,6 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 * Date       :  11/29/2020
 * Description:  MULS op-code
 *-----------------------------------------------------------------
-
-                    MOVE.L      #%1100000111000001,A0   ; Testing Info
 
 *------------------------  MULS: Diplay MULS  ----------------------                    
 OP_MULS             LEA         MULS_Output,A1          ; Display 'MULS'
@@ -484,23 +499,24 @@ OP_MULS             LEA         MULS_Output,A1          ; Display 'MULS'
 *MULS has been printed 
 *SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER hold the corresponding data
 *------------------------------------------------------------------- 
-                    
-
-
-
-*---------------------  Next OP-Code  ------------------------------------------
-*-------------------------------------------------------------------       
-
-
+                   
 
 *------------------------  JSR  ----------------------------------
 * Written by :  Anna Jennings
 * Date       :  11/24/2020
 * Description:  Prints JSR EA
 *-----------------------------------------------------------------
+
+*---------------------  JSR: Instuction Checks  ------------------
+OP_JSR              CLR         D4                      ; Clearing D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000111000,D4   ; clear all bits expect the effective address's mode
+                    LSR.L       #3,D4                   ; isolate the mode bits
+                    
+                    BRA         JSR_Mode_Check
                        
 *----------------------- JSR: Display  ---------------------------
-OP_JSR              LEA         JSR_Output,A1           ; Display 'JSR' 
+JSR_Dis             LEA         JSR_Output,A1           ; Display 'JSR' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                
@@ -514,6 +530,17 @@ OP_JSR              LEA         JSR_Output,A1           ; Display 'JSR'
                     JSR         EA_DECODE               ; move to EA with D4 holding the effective address (mode, register)
 
 
+*------------------- JSR: Functions  -----------------------------
+JSR_Mode_Check      CMP.W       #%000,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%001,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%011,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%100,D4
+                    BEQ         Invalid_Instruction
+                    BRA         JSR_Dis
+
 *----------------------  End of JSR  -----------------------------
 *JSR has been printed
 *D4 holds the effective address (mode, register)
@@ -526,11 +553,22 @@ OP_JSR              LEA         JSR_Output,A1           ; Display 'JSR'
 * Date       :  11/24/2020
 * Description:  Prints NOT EA
 *-----------------------------------------------------------------
-
-                    MOVE.L      #%0100011001001010,A0   ; testing
+*---------------------- NOT: Instruction Check  ------------------
+OP_NOT              CLR         D4                      ; clearing D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000111000,D4   ; clear all bits except the effective address mode
+                    LSR.L       #3,D4                   ; isolate the mode
                     
-*----------------------  MOVE: Display NOT -----------------
-OP_NOT              LEA         NOT_Output,A1           ; Display 'NOT' 
+                    BRA         NOT_Mode_Check
+                    
+NOT_SC              MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits   
+                    
+                    BRA         NOT_Size_Check
+                    
+*----------------------  NOT: Display ----------------------------
+NOT_Dis             LEA         NOT_Output,A1           ; Display 'NOT' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output 
                    
@@ -547,8 +585,7 @@ NOT_OP              MOVE.L      A0,D4                   ; move the data from A0 
 
                     CMP.B       #%10,D4                 ; checking if the size is Long
                     BEQ         NOT_Long                ; Branch to Long Condition
-                    
-                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted                    
+                             
 
 *----------------------  NOT: Effective Address  ----------------
 NOT_Effective_Add   CLR         D4                      ; clearing D4
@@ -578,10 +615,19 @@ NOT_Long            LEA         Output_Long,A1          ; Display '.L' for MOVE 
 
                     BRA         NOT_Effective_Add       ; return to code
                     
+NOT_Mode_Check      CMP.W       #%001,D4                ; invalid mode data
+                    BEQ         Invalid_Instruction 
+                    BRA         NOT_SC   
+
+NOT_Size_Check      CMP.B       #%11,D4                 ; invalid size
+                    BEQ         Invalid_Instruction
+                    BRA         NOT_Dis
+                    
 *----------------------  End of NOT  -----------------------------
 *NOT and size have been printed
 *D4 holds the effective address (mode, register)
-*-----------------------------------------------------------------                    
+*-----------------------------------------------------------------
+                    
 
 *------------------------  AND  ----------------------------------
 * Written by :  Lexun Chi
@@ -645,7 +691,6 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     JSR         EA_DECODE
                     RTS
 
-*                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
 
 *--------------------- AND Dn + <ea> --> <ea>  ----------------------------------
 AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
@@ -682,7 +727,6 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
                     MOVE.W      D7,D5
                     
-*                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
                     JSR         EA_DECODE
                     RTS
                     
@@ -697,10 +741,16 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 * Date       :  11/27/2020
 * Description:  Prints the Shift EA
 *-----------------------------------------------------------
-                    MOVE.L      #%1110001001001010,A0   ; Testing info EA: A1,A2 (destination register 1, mode A) (source register 2, A)
+
+*--------------------  Shift: Instruction Checks  -----------
+OP_Shift            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits
+                    
+                    BRA         SHIFT_Size_Check
 
 *---------------------  Display Shift Type  -----------------
-OP_Shift            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+SHIFT_Dis           MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000000000011000,D4   ; clear all bits except the shift type     
                     LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
                     LSR.L       #1,D4
@@ -723,8 +773,7 @@ Shift_Dir           MOVE.L      A0,D4                   ; move the data from A0 
                     
                     CMP.B       #%0,D4                  ; if the bit is a 0 the direction is right                   
                     BRA         Right_Dir_Output        ; branch if right direction
-                    
-                    BRA         Invalid_Instruction     ; invailid insruction and move on
+                   
 
 *----------------  Shift: Get Register/Count  -------------
 Shift_Reg           CLR         D4                      ; clearing D4
@@ -748,9 +797,7 @@ Shift_Reg           CLR         D4                      ; clearing D4
                     BEQ         Shift_Word              ; branch to Word condition
 
                     CMP.B       #%10,D4                 ; checking if the size is Long
-                    BEQ         Shift_Long              ; Branch to Long Condition
-                    
-                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted   
+                    BEQ         Shift_Long              ; Branch to Long Condition   
                  
 *-----------------  Shift: Get I/R  ------------------------
 Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
@@ -759,7 +806,7 @@ Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 
 
                     MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
                     JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
-   
+                    RTS
 
 *--------------------  LSL: Functions  ---------------------
 LS_Display          LEA         LS_Output,A1            ; Display 'LS' 
@@ -804,6 +851,10 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
                     TRAP        #15                     ; task 15 for output
 
                     BRA         Shift_IR                ; return to code
+                    
+SHIFT_Size_Check    CMP.W       #%11,D4                 ; invalid size
+                    BEQ         Invalid_Instruction     
+                    BRA         SHIFT_Dis
 
 
 *----------------------  End of Shift  -----------------------------
@@ -822,8 +873,16 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
 * Description:  Prints the MOVEM EA
 *----------------------------------------------------------- 
 
+*----------------  MOVEM: Instuction Checks  ---------------
+OP_MOVEM            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
+                    AND.L       #%0000000000111000,D4   ; isolate mode bits
+                    LSR.L       #3,D4                   ; move mode bits to msb 
+                    
+                    BRA         MOVEM_Mode_Check 
+
+
 *----------------  MOVEM: Display MOVEM  -------------------
-OP_MOVEM            LEA         MOVEM_Output,A1         ; Display 'MOVEM' 
+MOVEM_Dis           LEA         MOVEM_Output,A1         ; Display 'MOVEM' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
                     
@@ -836,9 +895,7 @@ OP_MOVEM            LEA         MOVEM_Output,A1         ; Display 'MOVEM'
                     BEQ         MOVEM_Word              ; branch to word output       
 
                     CMP.B       #%1,D4                  ; checking if the size is long
-                    BEQ         MOVEM_Long              ; branch to word output  
-
-                    BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted                    
+                    BEQ         MOVEM_Long              ; branch to word output                     
 
 *--------------  MOVEM: Direction  -------------------------
 MOVEM_Dir           CLR         D4                      ; clears D4
@@ -854,6 +911,7 @@ MOVEM_Dir           CLR         D4                      ; clears D4
                     AND.L       #%0000000000111111,D4   ; isolate the effective address
 
                     JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
+                    RTS
 
 *-------------- MOVEM: Functions  --------------------------
 MOVEM_Word          LEA         Output_Word,A1          ; Display '.W' for MOVEM size
@@ -867,6 +925,15 @@ MOVEM_Long          LEA         Output_Long,A1          ; Display '.L' for MOVEM
                     TRAP        #15                     ; task 15 for output
                    
                     BRA         MOVEM_Dir               ; return to code
+                    
+MOVEM_Mode_Check    CMP.W       #%000,D4            
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%001,D4
+                    BEQ         Invalid_Instruction
+                    CMP.W       #%011,D4
+                    BEQ         Invalid_Instruction
+                    BRA         MOVEM_Dis
+                    
                     
 *----------------------  End of MOVEM  ----------------------------
 *Movem and its size have been printed
@@ -883,7 +950,7 @@ MOVEM_Long          LEA         Output_Long,A1          ; Display '.L' for MOVEM
 * Description:  Prints BRA, BCC, BLT, BGE, or BEQ
 *-----------------------------------------------------------
 
-                    MOVE.L      #%0110110011111000,A0   ; Testing info
+
                 
 *--------------- Branch: Get Branch Type  -----------------           
 
@@ -906,40 +973,44 @@ OP_Branch           MOVE.L      A0,D4                   ; move instruction from 
                     BEQ         BEQ_Message             ; branch to print out BEQ
                 
                     BRA         Invalid_Instruction     ; branch if invalid instruction
+
+*---------------  Branch: Send to EA  ---------------------
+BRA_Send            CLR         D4                  
+                    MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
+                    ADD.L       #%0000000011111111,D4   ; isolating the displacemen
+                    
+                    JSR         EA_Decode               ; D4 holding the Displacement for the EA
+                    RTS                  
                 
 *---------------  Branch: Functions  ---------------------
 BRA_Message         LEA         BRA_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code
+                    BRA         BRA_Send
                 
 BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code   
+                    BRA         BRA_Send   
 
 BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code    
+                    BRA         BRA_Send   
 
 BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-*                    BRA         EA_Branch               ; finish op-code
-                    
-                
+                    BRA         BRA_Send
+                                    
 *------------------ End of Branch  -------------------------
 *The branch condition has been printed to the screen
 *no remaining data is stored
 *-----------------------------------------------------------
-
-
-*---------------------  Next OP-Code  -----------------------
 
 
 
@@ -954,7 +1025,7 @@ LF              EQU     $0A
                     
 *---------------------  Global Variables and Functions -----------------------------------                    
 
-Invalid_Ins_Output  DC.W        'Invalid Instruction',0
+Invalid_Ins_Output  DC.W        'XXXXXXXX  DATA YYYY',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
@@ -977,9 +1048,9 @@ LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
 L_Output            DC.W        'L',0
-
+DATA                DC.W        ' DATA ',0
 Next_Line           DC.W        CR,LF,0
-
+Space               DC.W        ' ',0
 Comma               DC.W        ',',0
 
 
@@ -995,11 +1066,19 @@ EA_MULS
 
 
 Invalid_Instruction 
-                    *LEA         Invalid_Ins_Output,A1   ; Displaying the Invalid instruction message
-                    *MOVE.B      #14,D0                  ; Loading the invalid input message into D0
-                    *TRAP        #15
-                    BRA         NOW
-             
+                    MOVE.L      A0,D1
+                    MOVE.B      #3,D0
+                    TRAP        #15
+
+                    LEA         Data,A1                 ; Displaying the Data part of Invalid instruction message
+                    MOVE.B      #14,D0                  ; Loading the invalid input message into D0
+                    TRAP        #15
+                    
+                    MOVE.B      #1,D0
+                    TRAP        #15
+                    
+                    BRA         CON
+                                  
                     
                     SIMHALT                             ; stop code if failed input
                         
@@ -1019,6 +1098,7 @@ Invalid_Instruction
 
 
 
+                    
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
