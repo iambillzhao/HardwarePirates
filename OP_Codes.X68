@@ -16,10 +16,10 @@
 *--------------------  MOVE: Instruction Check  ------------
 OP_MOVE             CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
-                    LSR.L       #3,D4                   ; stores source mode in D4
+                    AND.L       #%0000000111000000,D4   ; clearing all bits except Destination Mode
+                    LSR.L       #6,D4                   ; stores source mode in D4
                     
-                    BRA         MOVE_Source_Check       ; branches to check the source mode
+                    BRA         MOVE_Dest_Check        ; branches to check the destination mode
 
                     CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
@@ -49,8 +49,6 @@ MOVE_Dis            LEA         MOVE_Output,A1          ; Display 'MOVE'
 
                     CMP.B       #%10,D4                 ; checking if the size is Long
                     BEQ         MOVE_Long               ; Branch to Long Condition
-                    
-                    *BRA         Invalid_Instruction     ; branches if the size data isn't properly formatted
 
 MOVE_Dest_Reg       CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
@@ -109,7 +107,7 @@ MOVE_Long           LEA         Output_Long,A1          ; Display '.L' for MOVE 
 
                     BRA         MOVE_Dest_Reg           ; return to code
                     
-MOVE_Source_Check   CMP.L       #%001,D4                ; an invalid input
+MOVE_Dest_Check     CMP.L       #%001,D4                ; an invalid input
                     BEQ         Invalid_Instruction     ; moves on to next instruction                    
                     BRA         MOVE_Dis                ; move to check next part of instruction
 
@@ -812,7 +810,7 @@ Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 
 
                     MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
                     JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
-   
+                    RTS
 
 *--------------------  LSL: Functions  ---------------------
 LS_Display          LEA         LS_Output,A1            ; Display 'LS' 
@@ -917,6 +915,7 @@ MOVEM_Dir           CLR         D4                      ; clears D4
                     AND.L       #%0000000000111111,D4   ; isolate the effective address
 
                     JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
+                    RTS
 
 *-------------- MOVEM: Functions  --------------------------
 MOVEM_Word          LEA         Output_Word,A1          ; Display '.W' for MOVEM size
@@ -978,33 +977,40 @@ OP_Branch           MOVE.L      A0,D4                   ; move instruction from 
                     BEQ         BEQ_Message             ; branch to print out BEQ
                 
                     BRA         Invalid_Instruction     ; branch if invalid instruction
+
+*---------------  Branch: Send to EA  ---------------------
+BRA_Send            CLR         D4                  
+                    MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
+                    ADD.L       #%0000000011111111,D4   ; isolating the displacemen
+                    
+                    JSR         EA_Decode               ; D4 holding the Displacement for the EA
+                    RTS                  
                 
 *---------------  Branch: Functions  ---------------------
 BRA_Message         LEA         BRA_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code
+                    BRA         BRA_Send
                 
 BLT_Message         LEA         BLT_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code   
+                    BRA         BRA_Send   
 
 BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    *BRA         EA_Branch               ; finish op-code    
+                    BRA         BRA_Send   
 
 BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-*                    BRA         EA_Branch               ; finish op-code
-                    
-                
+                    BRA         BRA_Send
+                                    
 *------------------ End of Branch  -------------------------
 *The branch condition has been printed to the screen
 *no remaining data is stored
@@ -1023,7 +1029,7 @@ LF              EQU     $0A
                     
 *---------------------  Global Variables and Functions -----------------------------------                    
 
-Invalid_Ins_Output  DC.W        'Invalid Instruction',0
+Invalid_Ins_Output  DC.W        'XXXXXXXX  DATA YYYY',0
 Output_Byte         DC.W        '.B     ',0
 Output_Word         DC.W        '.W     ',0
 Output_Long         DC.W        '.L     ',0
