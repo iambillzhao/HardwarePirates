@@ -44,7 +44,6 @@ BEG:
     ; CATCH INPUT, CONVERT TO ASCII
     MOVE.B  #2,D0       ; sets to task 2
     LEA     SADD,A1     ; loads starting address to A1
-    *LEA     SADD,A0     ;       Testing
     TRAP    #15         ; gets input from the user
     
     ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
@@ -53,20 +52,16 @@ BEG:
     CMP.W   #$0008,D1   ; compares 8 to D1
     BGT     INVALIDADD  ; triggers program's invalid branch
     JSR     BCON        ; loops to convert ASCII to hex
-    MOVE.L  D3,A0       ;         Testing
-    
-    MOVE.W  (A0),D0    ; copies the data from SP to D0
-    MOVE.L  D0,A0
-    
-                        ; Data from the register # of A0
+    MOVE.L  D3,A0       ; moves the data of D3 to A0
+    MOVE.W  (A0),D0     ; copies the data from A0 to D0
+    MOVE.L  D0,A0       ; moves the copied data to A0
     MOVEA.L D3,A5       ; moves temporary address to A5 for start
     MOVE.L  D3,D5       ; moves the value of D3 to D5 for checks
     
     ; ADDRESS CHECKS
     ANDI.B  #1,D2       ; checks if it is odd
     BNE     INVALIDADD  ; invalid if odd, error
-    
-    MOVE.L  D3,D2
+    MOVE.L  D3,D2       ; moves starting address to D2
     CLR     D3          ; clears D3 for ending address
     
 END:
@@ -93,7 +88,12 @@ END:
     BNE     INVALIDADD  ; invalid if odd, error
     CMP.L   D3,D5       ; checks if the ending address is less
     BGT     INVALIDADD  ; ending address is less, invalid
+    MOVE.L  A6,D3       ; moves ending address to D3
     
+    ; BEGIN DISASSEMBLY PROCESS
+    LEA     DISBEG,A1   ; loads message to A1
+    MOVE.B  #14,D0      ; sets to task 14
+    TRAP    #15         ; displays message
     JSR     NOW         ; continues to disassembly
     BRA     ASK         ; program starts to loop
     
@@ -162,8 +162,7 @@ BACK:
 *-------------------- DISASSEMBLY --------------------------
 NOW:
     ; A0 TO STORE CODE TO DISASSEMBLE
-    *MOVE.W  D7,A0       ; moves code to A0
-    MOVE.W  A0,D4
+    MOVE.W  A0,D4       ; moves A0 to D4
     CLR     D0          ; clears D0
     
     ; GETS MOST SIGNIFICANT 4 BYTES
@@ -171,12 +170,13 @@ NOW:
     LSR.W   D0,D4       ; shifts D4 by 12
     MULU    #6,D4       ; gets offset
     
-    CMPA.L  A6,A5       ; compares addresses
-    BGT     BACK        ; goes back to the main branch
+    CMP     D3,D2       ; comapres curr and ending address
+    BGT     ASK         ; disassembly completed
     
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
     JSR     00(A3,D4)   ; jsr using word processes
+    BRA     CON         ; jumps to the continue branch
 
 CON:
     LEA     NEXTLINE,A1
@@ -199,16 +199,12 @@ OPCODES:
     JMP     SS
     JMP     SS
     JMP     S1001       ; for SUB
-    JMP     SS
-    JMP     SS
+    JMP     SS          ; for INVALID
+    JMP     SS          ; for INVALID
     JMP     S1100       ; for MULS,AND
     JMP     S1101       ; for ADD
     JMP     S1110       ; for SHIFT (LSL,ASR)
     JMP     SS
-
-SS:
-    BRA     INVALID
-
     
 ; for MOVE
 S00:
@@ -253,7 +249,8 @@ S1100:
     BEQ     OP_MULS     ; redirects to MULS
     CMP.W   #$1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
-*    BRA     OP_AND      ; redirects to AND otherwise
+    ; TODO: NOT YET IMPLEMENTED
+    ; BRA     OP_AND      ; redirects to AND otherwise
 
 ; for ADD
 S1101:
@@ -264,6 +261,10 @@ S1101:
 S1110:
     CLR     D4          ; clears data register D4
     BRA     OP_SHIFT    ; redirects to SHIFT (ASR,LSL)
+    
+; for INVALID
+SS:
+    BRA     Invalid_Instruction ; invalid code
 
 
 *-------------------- PROGRAM LOOP -------------------------
@@ -317,24 +318,24 @@ CR      EQU     $0D
 LF      EQU     $0A
 
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
-        DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0        
+        DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0      
 
 INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
+DISBEG   DC.B   CR,LF,'STARTING DISASSEMBLY PROCESS:',CR,LF,0
+
 NEXTLINE DC.B   CR,LF,0
 
-INPUTCON DC.B   'TYPE ANY CHARACTER TO CONTINUE, TYPE CAPITALIZED "Q" TO QUIT: ',CR,LF,0
+INPUTCON DC.B   CR,LF,'DISASSEMBLY COMPLETED!',CR,LF
+         DC.B   'PRESS ENTER TO START AGAIN, "Q" TO QUIT: ',CR,LF,0
 
-DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',CR,LF,0
+DISCON  DC.B    'PRESS ENTER TO CONTINUE THE DISASSEMBLY',0
         
 INVALID DC.B    CR,LF,'ERROR: THIS IS AN INVALID ADDRESS!',CR,LF,0
 
 GOODBYE DC.B    CR,LF,'Thank you for using our disassembler!',CR,LF,0
-
-
-*------------------------ END OF I/O -----------------------
 
 
 *------------------------ VARIABLES ------------------------
@@ -357,6 +358,7 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+<<<<<<< HEAD
 
 
 
@@ -368,6 +370,8 @@ EADD    DS.B    8       ; ending address storage
 
 
 
+=======
+>>>>>>> 970dc9b4d99505a759f3dd49cab09be291bd27c1
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
