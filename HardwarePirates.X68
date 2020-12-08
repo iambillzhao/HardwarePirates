@@ -185,7 +185,7 @@ CON:
     ADD.W   #2,D2
     MOVE.L  D2,A0
     MOVE.W  (A0),D0
-    MOVE.L  D0,A0
+    MOVE.L  D0,A0    
     BRA     NOW
 
 OPCODES:
@@ -195,6 +195,7 @@ OPCODES:
     JMP     S00         ; for MOVE
     JMP     S0100       ; for NOT,JSR,RTS,NOP,MOVEM,LEA
     JMP     S0110       ; for BRA,BCC (BLT,BGE,BEQ)
+    JMP     SS
     JMP     SS
     JMP     SS
     JMP     S1001       ; for SUB
@@ -356,6 +357,7 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
 
 
 
