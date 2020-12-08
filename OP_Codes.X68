@@ -859,7 +859,7 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
                     BRA         Shift_IR                ; return to code
                     
 SHIFT_Size_Check    CMP.W       #%11,D4                 ; invalid size
-                    BEQ         Invlaid_Instruction     
+                    BEQ         Invalid_Instruction     
                     BRA         SHIFT_Dis
 
 
@@ -932,9 +932,9 @@ MOVEM_Long          LEA         Output_Long,A1          ; Display '.L' for MOVEM
                     BRA         MOVEM_Dir               ; return to code
                     
 MOVEM_Mode_Check    CMP.W       #%000,D4            
-                    BEQ         Invailid_Instruction
+                    BEQ         Invalid_Instruction
                     CMP.W       #%001,D4
-                    BEQ         Invalid_Instuction
+                    BEQ         Invalid_Instruction
                     CMP.W       #%011,D4
                     BEQ         Invalid_Instruction
                     BRA         MOVEM_Dis
@@ -1088,7 +1088,7 @@ Invalid_Instruction
 
 
 
-
+                    
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
