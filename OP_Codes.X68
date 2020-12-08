@@ -589,7 +589,7 @@ NOT_Long            LEA         Output_Long,A1          ; Display '.L' for MOVE 
 * Description:  AND op-code
 *-----------------------------------------------------------------
 
-                    MOVE.L      #%1100000100010000,A0   ; Testing Info
+*                    MOVE.L      #%1100000100010000,A0   ; Testing Info
 
 *------------------------  AND: Diplay AND  ----------------------     
 OP_AND              LEA         AND_Output,A1           ; Display 'AND' 
@@ -615,6 +615,7 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     LSR.W       D0,D7                   ; Isolate the remainder bits
                     
                     MOVE.W      D7,SRC_MODE             ; Copy bits to decode source mode
+                    MOVE.W      D7,D4
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
@@ -622,8 +623,16 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     LSR.W       D0,D7                   ; Isolate the remainder bits
                 
                     MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                
+                    MOVE.W      D7,D5
+                    
+                    JSR         EA_DECODE
+
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
+                    
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
+                    MOVE.W      #0,D4
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
                     LSL.W       #4,D7                   ; Cut up to bit 11
@@ -631,11 +640,16 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     LSR.W       D0,D7                   ; Isolate the remainder bits
                     
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D7,D5
+                    
+                    JSR         EA_DECODE
+                    RTS
 
-                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
+*                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data 
 
 *--------------------- AND Dn + <ea> --> <ea>  ----------------------------------
 AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
+                    MOVE.W      #0,D4
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
                     LSL.W       #4,D7                   ; Cut up to bit 11
@@ -643,6 +657,13 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     LSR.W       D0,D7                   ; Isolate the remainder bits
 
                     MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D7,D5
+                    
+                    JSR         EA_DECODE
+                    
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on   
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
@@ -651,6 +672,7 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     LSR.W       D0,D7                   ; Isolate the remainder bits
 
                     MOVE.W      D7,DEST_MODE            ; Copy bits to decode destination mode
+                    MOVE.W      D7,D4
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
@@ -658,9 +680,11 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     LSR.W       D0,D7                   ; Isolate the remainder bits            
                     
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D7,D5
                     
-                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
-                    
+*                    BRA         EA_AND                  ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+                    JSR         EA_DECODE
+                    RTS
                     
 *---------------------  End of AND  --------------------------------
 *AND has been printed 
@@ -676,7 +700,7 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.L      #%1110001001001010,A0   ; Testing info EA: A1,A2 (destination register 1, mode A) (source register 2, A)
 
 *---------------------  Display Shift Type  -----------------
-OP_Shift             MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+OP_Shift            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000000000011000,D4   ; clear all bits except the shift type     
                     LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
                     LSR.L       #1,D4
@@ -980,6 +1004,7 @@ Invalid_Instruction
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
+
 
 
 

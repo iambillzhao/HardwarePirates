@@ -250,7 +250,7 @@ S1100:
     CMP.W   #$1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
     ; TODO: NOT YET IMPLEMENTED
-    ; BRA     OP_AND      ; redirects to AND otherwise
+    BRA     OP_AND      ; redirects to AND otherwise
 
 ; for ADD
 S1101:
@@ -372,6 +372,7 @@ EADD    DS.B    8       ; ending address storage
 
 =======
 >>>>>>> 970dc9b4d99505a759f3dd49cab09be291bd27c1
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
