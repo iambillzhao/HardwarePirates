@@ -259,8 +259,7 @@ LEA_Mode_Check      CMP.W       #%000,D4
 OP_ADD              LEA         ADD_Output,A1           ; Display 'ADD'
                     MOVE.B      #14,D0                  ; trap rask 14 is loaded into D0
                     TRAP        #15                     ; trap 15 is for output
-*                    TRAP        #15
-      
+
                     MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
                     AND.L       #%0000000100000000,D4   ; Clear all bits except for Bit 8
                     LSR.L       #8,D4                   ; access Bit 8, do this by shifting the number the right 8 bits
@@ -536,10 +535,17 @@ JSR_Dis             LEA         JSR_Output,A1           ; Display 'JSR'
 *-------------------  JSR: Effective Address  --------------------
                     CLR         D4                      ; Clearing D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111111,D4   ; clear all bits expect the effective address
+*                    AND.L       #%0000000000111111,D4   ; clear all bits expect the effective address
+
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
                     
 *-------------------  JSR: Send to EA  ---------------------------                    
                     JSR         EA_DECODE               ; move to EA with D4 holding the effective address (mode, register)
+                    RTS
 
 
 *------------------- JSR: Functions  -----------------------------
@@ -647,7 +653,6 @@ NOT_Size_Check      CMP.B       #%11,D4                 ; invalid size
 * Description:  AND op-code
 *-----------------------------------------------------------------
 
-*                    MOVE.L      #%1100000100010000,A0   ; Testing Info
 
 *------------------------  AND: Diplay AND  ----------------------     
 OP_AND              LEA         AND_Output,A1           ; Display 'AND' 
@@ -755,7 +760,7 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 *-----------------------------------------------------------
 
 *--------------------  Shift: Instruction Checks  -----------
-OP_Shift            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+OP_SHIFT            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
                     AND.L       #%0000000011000000,D4   ; clear all bits except the size     
                     LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits
                     
@@ -815,7 +820,10 @@ Shift_Reg           CLR         D4                      ; clearing D4
 Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000000000100000,D4   ; clear all bits except the i/r
                     LSR.L       #5,D4                   ; access the i/r elememt, by shifting 5 places to the right
-
+                    
+                    CMP.B       #1,D4
+                    BEQ         DATA_REG
+                    
                     MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
                     JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
                     RTS
@@ -868,6 +876,7 @@ SHIFT_Size_Check    CMP.W       #%11,D4                 ; invalid size
                     BEQ         Invalid_Instruction     
                     BRA         SHIFT_Dis
 
+DATA_REG            MOVE.B      #0,D4
 
 *----------------------  End of Shift  -----------------------------
 *AS* or LS* printed with the appropriate direction of shift
@@ -920,7 +929,14 @@ MOVEM_Dir           CLR         D4                      ; clears D4
 *---------------  MOVEM: Effective Address  ----------------                    
                     CLR         D4                      ; clears D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111111,D4   ; isolate the effective address
+*                    AND.L       #%0000000000111111,D4   ; isolate the effective address
+
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+
 
                     JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
                     RTS
@@ -1047,7 +1063,7 @@ NOP_Output          DC.W        'NOP',0
 LEA_Output          DC.W        'LEA     ',0
 ADD_Output          DC.W        'ADD     ',0
 AND_Output          DC.W        'AND     ',0
-JSR_Output          DC.W        'JSR',0
+JSR_Output          DC.W        'JSR     ',0
 NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB     ',0

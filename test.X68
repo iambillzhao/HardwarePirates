@@ -15,11 +15,10 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
-    MULS.W    D0,D1
-    MULS.W    (A0),D1
-    MULS.W    -(A0),D1
-    MULS.W    (A0)+,D1
-    
+    RTS
+    NOP
+    RTS
+
 * Put program code here
 
     SIMHALT             ; halt simulator
@@ -27,7 +26,6 @@ NOP
 * Put variables and constants here
 
     END    START        ; last line of source
-
 
 
 
