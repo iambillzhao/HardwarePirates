@@ -324,6 +324,7 @@ ADD_DN              MOVE.W      A0,D7                   ; move the data from A0 
 
 *----------------------  ADD: Send to EA  ------------------- 
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
                     RTS
 
 *--------------------- ADD Dn + <ea> --> <ea>  ----------------------------------
@@ -363,6 +364,7 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 
 *----------------------  ADD: Send to EA  ---------------------------                        
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
                     RTS
                     
 *----------------------  ADD: Functions  -----------------------------------
@@ -486,6 +488,8 @@ SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 
 
 *----------------------  SUB: Send to EA  --------------------------------    
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
        
 *----------------------- SUB Dn + <ea> --> <ea> ----------------------------------
@@ -525,6 +529,8 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 
 *----------------------  SUB: Send to EA  -----------------------------------                       
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
                     
 *----------------------  SUB: Functions  -------------------
@@ -546,7 +552,10 @@ SUB_Print_Long      LEA         Output_Long,A1          ; Display '.L' for SUB s
 
                     BRA         SUB_By_Bit8             ; return to code
  
-SUB_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
+SUB_Op_mode_Check   CMP.B       #%111,D4                 ; an invalid input
+                    BEQ         Invalid_Instruction
+                    
+                    CMP.B       #%011,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
                     MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
@@ -574,7 +583,8 @@ SUB_Des_Check       CMP.L       #%000,D4                ; an invalid input
 *-----------------------------------------------------------------
 
 *--------------------  MULS: Instruction Check  --------------------
-OP_MULS             CLR         D4
+OP_MULS             MOVE.L      A0,D4
+*                    CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
                     AND.L       #%0000000000111000,D4   ; clearing all bits except Op-mode 
                     LSR.L       #3,D4                   ; Store effective address mode in D4
@@ -847,6 +857,8 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     MOVE.W      D7,D5
                     
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
 
 
@@ -886,6 +898,8 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,D5
                     
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
                     
 *----------------------  AND: Functions  ----------------------------------- 
@@ -1175,12 +1189,22 @@ OP_Branch           MOVE.L      A0,D4                   ; move instruction from 
                 
                     BRA         Invalid_Instruction     ; branch if invalid instruction
 
+*--------------- Branch: Get Size  ------------------------
+BRA_Size            CLR         D4                  
+                    MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
+                    AND.L       #%0000000011111111,D4   ; isolating the displacement
+                    
+                    CMP.L       #%00000000,D4
+                    BRA         BRA_Byte
+                    BRA         BRA_Word
+
 *---------------  Branch: Send to EA  ---------------------
 BRA_Send            CLR         D4                  
                     MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
-                    ADD.L       #%0000000011111111,D4   ; isolating the displacemen
+                    AND.L       #%0000000011111111,D4   ; isolating the displacement
+
+                    JSR         BCC_DISP
                     
-                    JSR         EA_Decode               ; D4 holding the Displacement for the EA
                     RTS                  
                 
 *---------------  Branch: Functions  ---------------------
@@ -1194,19 +1218,31 @@ BLT_Message         LEA         BLT_Output,A1           ; loading BRA message in
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         BRA_Send   
+                    BRA         BRA_Size   
 
 BGE_Message         LEA         BGE_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         BRA_Send   
+                    BRA         BRA_Size   
 
 BEQ_Message         LEA         BEQ_Output,A1           ; loading BRA message into A1
                     MOVE.B      #14,D0                  ; trap task 14 loadinto D0
                     TRAP        #15                     ; output BRA
                 
-                    BRA         BRA_Send
+                    BRA         BRA_Size
+                    
+BRA_Byte            LEA         Output_Byte,A1          ; Display '.B' for BRA size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         BRA_Send                ; return to code 
+
+BRA_Word            LEA         Output_Word,A1          ; Display '.W' for BRA size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+                   
+                    BRA         BRA_Send                ; return to code                   
                                     
 *------------------ End of Branch  -------------------------
 *The branch condition has been printed to the screen
@@ -1241,9 +1277,9 @@ RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
 MULS_Output         DC.W        'MULS.W     ',0
 BRA_Output          DC.W        'BRA  ',0
-BLT_Output          DC.W        'BLT  ',0
-BGE_Output          DC.W        'BGE  ',0
-BEQ_Output          DC.W        'BEQ  ',0
+BLT_Output          DC.W        'BLT',0
+BGE_Output          DC.W        'BGE',0
+BEQ_Output          DC.W        'BEQ',0
 LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
@@ -1274,16 +1310,20 @@ Invalid_Instruction
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
 
-                    MOVE.L      (A0),A1
-                    MOVE.B      #1,D0
-                    TRAP        #15
-
+*                    MOVE.L      (A0),A1
+*                    MOVE.B      #1,D0
+*                    TRAP        #15
+*
                     BRA         CON                                  
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
                     
+
+
+
+
 
 
 
