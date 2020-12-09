@@ -592,22 +592,35 @@ MULS_Dis            LEA         MULS_Output,A1          ; Display 'MULS'
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
                     LSR.W       D0,D7                   ; Isolate the remainder bits    
                     MOVE.W      D7,SRC_MODE             ; Copy bits to src dest mode
+                    MOVE.W      D7,D4
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
                     LSL.W       D0,D7                   ; Cut up to bit 2
                     LSR.W       D0,D7                   ; Isolate the remainder bits         
                     MOVE.W      D7,SRC_REGISTER         ; Copy bits to src dest register
+                    MOVE.W      D7,D5
+                
+                    JSR         EA_DECODE
+                    
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15                
                 
                     MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
                     LSL.W       #4,D7                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits       
+                    LSR.L       D0,D7                   ; Isolate the remainder bits       
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode dest register
+                    MOVE.W      #0,D4
+                    MOVE.W      D7,D5
+                    
+                    JSR         EA_DECODE
+                    RTS
                     
 *----------------------  MULS: Send to EA  -------------------                    
-                    BRA         EA_MULS                 ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+*                    BRA         EA_MULS                 ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
  
 *----------------------  MULS: Functions  ------------------- 
 MULS_Mode_Check     CMP.L       #%001,D4                ; an invalid input
@@ -644,10 +657,17 @@ JSR_Dis             LEA         JSR_Output,A1           ; Display 'JSR'
 *-------------------  JSR: Effective Address  --------------------
                     CLR         D4                      ; Clearing D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111111,D4   ; clear all bits expect the effective address
+*                    AND.L       #%0000000000111111,D4   ; clear all bits expect the effective address
+
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
                     
 *-------------------  JSR: Send to EA  ---------------------------                    
                     JSR         EA_DECODE               ; move to EA with D4 holding the effective address (mode, register)
+                    RTS
 
 
 *------------------- JSR: Functions  -----------------------------
@@ -919,7 +939,7 @@ AND_Des_Check       CMP.L       #%000,D4                ; an invalid input
 *-----------------------------------------------------------
 
 *--------------------  Shift: Instruction Checks  -----------
-OP_Shift            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+OP_SHIFT            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
                     AND.L       #%0000000011000000,D4   ; clear all bits except the size     
                     LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits
                     
@@ -979,7 +999,10 @@ Shift_Reg           CLR         D4                      ; clearing D4
 Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000000000100000,D4   ; clear all bits except the i/r
                     LSR.L       #5,D4                   ; access the i/r elememt, by shifting 5 places to the right
-
+                    
+                    CMP.B       #1,D4
+*                    BEQ         DATA_REG
+                    
                     MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
                     JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
                     RTS
@@ -1082,7 +1105,14 @@ MOVEM_Dir           CLR         D4                      ; clears D4
 *---------------  MOVEM: Effective Address  ----------------                    
                     CLR         D4                      ; clears D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111111,D4   ; isolate the effective address
+*                    AND.L       #%0000000000111111,D4   ; isolate the effective address
+
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+
 
                     JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
                     RTS
@@ -1203,13 +1233,13 @@ MOVE_Output         DC.W        'MOVE',0
 MOVEM_Output        DC.W        'MOVEM',0
 NOP_Output          DC.W        'NOP',0
 LEA_Output          DC.W        'LEA     ',0
-ADD_Output          DC.W        'ADD     ',0
-AND_Output          DC.W        'AND     ',0
-JSR_Output          DC.W        'JSR',0
+ADD_Output          DC.W        'ADD',0
+AND_Output          DC.W        'AND',0
+JSR_Output          DC.W        'JSR     ',0
 NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
-SUB_Output          DC.W        'SUB     ',0
-MULS_Output         DC.W        'MULS',0
+SUB_Output          DC.W        'SUB',0
+MULS_Output         DC.W        'MULS.W     ',0
 BRA_Output          DC.W        'BRA  ',0
 BLT_Output          DC.W        'BLT  ',0
 BGE_Output          DC.W        'BGE  ',0
@@ -1236,24 +1266,25 @@ EA_MULS
 
 
 Invalid_Instruction 
-                    MOVE.L      A0,D1
+                    MOVE.L      D2,D1
                     MOVE.B      #3,D0
                     TRAP        #15
 
                     LEA         Data,A1                 ; Displaying the Data part of Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
-                    
+
+                    MOVE.L      (A0),A1
                     MOVE.B      #1,D0
                     TRAP        #15
-                    
-                    BRA         CON
-                                  
+
+                    BRA         CON                                  
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
                     
+
 
 
 

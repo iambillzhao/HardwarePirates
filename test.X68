@@ -15,26 +15,9 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
-    ADD.B     D1,(A1)
-    ADD.B     D1,(A1)+
-    ADD.B     D1,-(A1)
-    ADD.B     (A1),D1
-    ADD.B     (A1)+,D1
-    ADD.B     -(A1),D1
-    ADD.W     D1,D2
-    ADD.W     D1,(A1)
-    ADD.W     D1,(A1)+
-    ADD.W     D1,-(A1)
-    ADD.W     (A1),D1
-    ADD.W     (A1)+,D1
-    ADD.W     -(A1),D1
-    ADD.L     D1,D2
-    ADD.L     D1,(A1)
-    ADD.L     D1,(A1)+
-    ADD.L     D1,-(A1)
-    ADD.L     (A1),D1
-    ADD.L     (A1)+,D1
-    ADD.L     -(A1),D1
+    MULS.W    $12,D1
+    MULS.W    $1234,D1
+    MULS.W    $12345678,D1
 
 * Put program code here
 

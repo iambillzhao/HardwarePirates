@@ -9,7 +9,6 @@
     
 START:                  ; first instruction of program
 
-
 *-------------------------  I/O  ---------------------------
 * Written by :  Bill Zhao
 * Date       :  November 2020
@@ -89,6 +88,8 @@ END:
     CMP.L   D3,D5       ; checks if the ending address is less
     BGT     INVALIDADD  ; ending address is less, invalid
     MOVE.L  A6,D3       ; moves ending address to D3
+    CMP.L   D2,D3       ; comapres addresses if they are same
+    BEQ     INVALIDADD  ; same address, invalid
     
     ; BEGIN DISASSEMBLY PROCESS
     LEA     DISBEG,A1   ; loads message to A1
@@ -230,7 +231,7 @@ OPCODES:
     JMP     S1100       ; for MULS,AND
     JMP     S1101       ; for ADD
     JMP     S1110       ; for SHIFT (LSL,ASR)
-    JMP     SS
+    JMP     SS          ; for INVALID
     
 ; for MOVE
 S00:
@@ -240,22 +241,22 @@ S00:
 ; for NOT,JSR,RTS,NOP,MOVEM,LEA
 S0100:
     CLR     D4          ; clears data register D4
-    MOVE.L  A0,D4       ; copies from D7 to D4
+    MOVE.L  A0,D4       ; copies from A0 to D4
     CMP.L   #%0100111001110101,D4 ; compares to RTS
     BEQ     OP_RTS      ; redirects to RTS
     CMP.L   #%0100111001110001,D4 ; compares to NOP
     BEQ     OP_NOP      ; redirects to NOP
-    ASL.B   #4,D4       ; shifts 4 of D4
-    CMP.W   #$1110,D4   ; compares to JSR unique bits
+    AND     #%0000111100000000,D4 ; gets 4 bits
+    LSR.L   #8,D4       ; shifts right 8 bits
+    CMP.W   #%1110,D4   ; compares to JSR unique bits
     BEQ     OP_JSR      ; redirects to JSR
-    CMP.W   #$0110,D4   ; compares to NOT unique bits
+    CMP.W   #%0110,D4   ; compares to NOT unique bits
     BEQ     OP_NOT      ; redirects to NOT
-    CMP.W   #$1000,D4   ; compares to MOVEM unique bits
+    CMP.W   #%1000,D4   ; compares to MOVEM unique bits
     BEQ     OP_MOVEM    ; redirects to MOVEM
-    CMP.W   #$1100,D4   ; compares to MOVEM unique bits
+    CMP.W   #%1100,D4   ; compares to MOVEM unique bits
     BEQ     OP_MOVEM    ; redirects to MOVEM
     BRA     OP_LEA      ; redirects to LEA otherwise
-
 ; for BRA,BCC (BLT,BGE,BEQ)
 S0110:
     CLR     D4          ; clears data register D4
@@ -267,16 +268,17 @@ S1001:
     BRA     OP_SUB      ; redirects to SUB
 
 ; for MULS,AND
-S1100:  
+S1100:
     CLR     D4          ; clears data register D4
-    MOVE.L  D7,D4       ; copies from D7 to D4
-    ASL.B   #6,D4       ; shifts by 6 bits
-    CMP.W   #$0111,D4   ; compares with MULS unique bits
+    MOVE.L  A0,D4       ; copies from A0 to D4
+    AND.L   #%0000001111000000,D4 ; gets 4 bits
+    LSR.L   #6,D4       ; shifts right 6 bits
+    CMP.W   #%0111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
-    CMP.W   #$1111,D4   ; compares with MULS unique bits
+    CMP.W   #%1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
     BRA     OP_AND      ; redirects to AND otherwise
-
+    
 ; for ADD
 S1101:
     CLR     D4          ; clears data register D4
