@@ -8,7 +8,6 @@
     ORG    $1000
     
 START:                  ; first instruction of program
-                
 
 *-------------------------  I/O  ---------------------------
 * Written by :  Bill Zhao
