@@ -1016,7 +1016,7 @@ Shift_Reg           CLR         D4                      ; clearing D4
                     BEQ         Shift_Long              ; Branch to Long Condition
 
                     CMP.B       #%11,D4
-                    BEQ         Shift_Word     
+                    BEQ         Mem_Word     
                  
 *-----------------  Shift: Get I/R  ------------------------
 Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
@@ -1096,7 +1096,11 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
 
                     BRA         Shift_IR                ; return to code
 
+Mem_Word            LEA         Output_Word,A1          ; Display '.W' for LSL size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
 
+                    BRA         DATA_ADD_SHIFT
 *----------------------  End of Shift  -----------------------------
 *AS* or LS* printed with the appropriate direction of shift
 *printed instruciton size 
@@ -1362,6 +1366,7 @@ Invalid_Instruction
 =======
 
 >>>>>>> 018962fda5350c4f8bfecab009911f0861132714
+
 
 
 *~Font name~Courier New~
