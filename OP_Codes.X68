@@ -5,8 +5,6 @@
 *-----------------------------------------------------------
 
 
-
-
 *-------------------------  MOVE  --------------------------
 * Written by :  Anna Jennings
 * Date       :  10/30/2020
@@ -264,9 +262,20 @@ OP_ADD              CLR         D4
 ADD_Dis             LEA         ADD_Output,A1           ; Display 'ADD'
                     MOVE.B      #14,D0                  ; trap rask 14 is loaded into D0
                     TRAP        #15                     ; trap 15 is for output
-*                    TRAP        #15
-      
-                    MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
+                    
+*------------------------ ADD: Get Size  -------------------------
+                    MOVE.L      A0,D4
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                                                   
+                    CMP.B       #%00,D4                 ; checking if the size is byte
+                    BEQ         ADD_Print_Byte
+                    CMP.B       #%01,D4                 ; checking if the size is Word  
+                    BEQ         ADD_Print_Word  
+                    CMP.B       #%10,D4                 ; checking if the size is Long
+                    BEQ         ADD_Print_Long
+                                    
+*------------------------ ADD: Distinguish op-mode -------------------                    
+Add_By_Bit8         MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
                     AND.L       #%0000000100000000,D4   ; Clear all bits except for Bit 8
                     LSR.L       #8,D4                   ; access Bit 8, do this by shifting the number the right 8 bits
                     
@@ -356,7 +365,25 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     JSR         EA_DECODE
                     RTS
                     
-*----------------------  ADD: Functions  ----------------------------------- 
+*----------------------  ADD: Functions  -----------------------------------
+ADD_Print_Byte      LEA         Output_Byte,A1          ; Display '.B' for ADD size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         Add_By_Bit8             ; return to code
+
+ADD_Print_Word      LEA         Output_Word,A1          ; Display '.W' for ADD size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         Add_By_Bit8             ; return to code
+                    
+ADD_Print_Long      LEA         Output_Long,A1          ; Display '.L' for ADD size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         Add_By_Bit8             ; return to code
+ 
 ADD_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
@@ -398,8 +425,20 @@ OP_SUB              CLR         D4
 SUB_Dis             LEA         SUB_Output,A1           ; Display 'SUB'
                     MOVE.B      #14,D0                  ; trap rask 14 is loaded into D0
                     TRAP        #15                     ; trap 15 is for output
-                    
-                    MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
+
+*------------------------ SUB: Get Size  -------------------------
+                    MOVE.L      A0,D4
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                                                   
+                    CMP.B       #%00,D4                 ; checking if the size is byte
+                    BEQ         SUB_Print_Byte
+                    CMP.B       #%01,D4                 ; checking if the size is Word  
+                    BEQ         SUB_Print_Word  
+                    CMP.B       #%10,D4                 ; checking if the size is Long
+                    BEQ         SUB_Print_Long
+
+*------------------------ SUB: distinguish op-mode ----------------------
+SUB_By_Bit8         MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
                     AND.L       #%0000000100000000,D4   ; Clear all bits except for Bit 8
                     LSR.L       #8,D4                   ; access Bit 8, do this by shifting the number the right 8 bits
                     
@@ -488,7 +527,25 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     JSR         EA_DECODE
                     RTS
                     
-*----------------------  SUB: Functions  ------------------- 
+*----------------------  SUB: Functions  -------------------
+SUB_Print_Byte      LEA         Output_Byte,A1          ; Display '.B' for SUB size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         SUB_By_Bit8             ; return to code
+
+SUB_Print_Word      LEA         Output_Word,A1          ; Display '.W' for SUB size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         SUB_By_Bit8             ; return to code
+                    
+SUB_Print_Long      LEA         Output_Long,A1          ; Display '.L' for SUB size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         SUB_By_Bit8             ; return to code
+ 
 SUB_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
@@ -698,12 +755,32 @@ NOT_Size_Check      CMP.B       #%11,D4                 ; invalid size
 * Description:  AND op-code
 *-----------------------------------------------------------------
 
+*--------------------  AND: Instruction Check  --------------------
+OP_AND              CLR         D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
+                    AND.L       #%0000000111000000,D4   ; clearing all bits except Op-mode 
+                    LSR.L       #6,D4                   ; Store Op-mode in D4
+
+                    BRA         AND_Op_mode_Check       ; branch to check the Op-mode 
+
 *------------------------  AND: Diplay AND  ----------------------     
-OP_AND              LEA         AND_Output,A1           ; Display 'AND' 
+AND_Dis             LEA         AND_Output,A1           ; Display 'AND' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output  
                     
-                    MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
+*------------------------ AND: Get Size  -------------------------
+                    MOVE.L      A0,D4
+                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits                                                   
+                    CMP.B       #%00,D4                 ; checking if the size is byte
+                    BEQ         AND_Print_Byte
+                    CMP.B       #%01,D4                 ; checking if the size is Word  
+                    BEQ         AND_Print_Word  
+                    CMP.B       #%10,D4                 ; checking if the size is Long
+                    BEQ         AND_Print_Long
+                                    
+*------------------------ AND: Distinguish op-mode -------------------                    
+And_By_Bit8         MOVE.L      A0,D4                   ; move the data from A0 and load it into D4 to be worked on  
                     AND.L       #%0000000100000000,D4   ; Clear all bits except for Bit 8
                     LSR.L       #8,D4                   ; access Bit 8, do this by shifting the number the right 8 bits
                     
@@ -790,6 +867,44 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     
                     JSR         EA_DECODE
                     RTS
+                    
+*----------------------  AND: Functions  ----------------------------------- 
+AND_Print_Byte      LEA         Output_Byte,A1          ; Display '.B' for AND size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         And_By_Bit8             ; return to code
+
+AND_Print_Word      LEA         Output_Word,A1          ; Display '.W' for AND size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         And_By_Bit8             ; return to code
+                    
+AND_Print_Long      LEA         Output_Long,A1          ; Display '.L' for AND size
+                    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+                    TRAP        #15                     ; task 15 for output
+
+                    BRA         And_By_Bit8             ; return to code
+                    
+AND_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
+                    BEQ         Invalid_Instruction
+
+                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D2                   ; Access Op-mode
+                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    BEQ         AND_Des_Check           ; Case: Dn ^ <ea> -> <ea>
+                    BRA         AND_Source_Check        ; Case: <ea> ^ Dn -> Dn
+
+AND_Source_Check    CMP.L       #%001,D4                ; an invalid input
+                    BEQ         Invalid_Instruction     ; moves on to next instruction           
+                    BRA         AND_Dis
+
+AND_Des_Check       CMP.L       #%000,D4                ; an invalid input
+                    BEQ         Invalid_Instruction     ; moves on to next instruction           
+                    CMP.L       #%001,D4                ; an invalid input
+                    BEQ         Invalid_Instruction     ; moves on to next instruction           
+                    BRA         AND_Dis
                     
 *---------------------  End of AND  --------------------------------
 *AND has been printed 
@@ -1139,6 +1254,8 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
                     
+
+
 
 *~Font name~Courier New~
 *~Font size~10~
