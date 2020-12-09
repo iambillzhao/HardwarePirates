@@ -115,17 +115,16 @@ Address111      MOVEA.L         A2, A6
 
 Abs_Word        ADDA.W          #2, A6
                 
-                LEA             Dollar,A1               ; prints a dollar
-                MOVE.B          #14,D0
-                TRAP            #15
-              
+*                LEA             Dollar,A1               ; prints a dollar
+*                MOVE.B          #14,D0
+*                TRAP            #15
 
                 ADD.W           #2,D2       ; increment address by 2
                 MOVE.L          D2,A0       ; copies data from D2 to A0
                 MOVE.W          (A0),D1
                 
                 MOVE.L          D1,A2       ; moves copied data to A0
-                MOVE.B          #16,D6
+                MOVE.B          #0,D6
                 MOVE.L          #28,D2
                 
                 JSR             LOOP
@@ -137,10 +136,10 @@ Abs_Word        ADDA.W          #2, A6
 Abs_Long        ADDA.W          #2, A6
 *                MOVE.B          #1, Address_Size
 
-                LEA             Dollar,A1               ; prints a dollar
-                MOVE.B          #14,D0
-                TRAP            #15
-                CLR             D0
+*                LEA             Dollar,A1               ; prints a dollar
+*                MOVE.B          #14,D0
+*                TRAP            #15
+*                CLR             D0
                 
                 ADD.L           #2,D2       ; increment address by 2
                 MOVE.L          D2,A0       ; copies data from D2 to A0
@@ -157,15 +156,7 @@ Abs_Long        ADDA.W          #2, A6
                 RTS
                 
 
-Imm_Data        LEA             Pound,A1                ; prints a pound
-                MOVE.B          #14,D0
-                TRAP            #15
-
-                LEA             Dollar,A1               ; prints a dollar
-                MOVE.B          #14,D0
-                TRAP            #15
-
-                ADD.W           #2,D2       ; increment address by 2
+Imm_Data        ADD.W           #2,D2       ; increment address by 2
                 MOVE.L          D2,A0       ; copies data from D2 to A0
                 MOVE.W          (A0),D1
                 
@@ -184,7 +175,7 @@ Imm_Long        ADDA.W          #2, A6
                 
                 CLR.L           D6
                 MOVE.L          (A6),D6
-                MOVE.L          #8,D7
+*                MOVE.L          #8,D7
 *                JSR             PRINT_DATA
 
                 ADDA.W          #4, A2
@@ -222,10 +213,6 @@ BCC_DISP
                 MOVE.B          #16,D6
                 MOVE.L          #28,D2
                 LEA             HEX_TABLE,A5    ; loads hex table to A5
-
-                LEA             Dollar,A1               ; prints a dollar
-                MOVE.B          #14,D0
-                TRAP            #15
                 
                 JSR             LOOP
                 MOVE.W          Original_Add,D2
@@ -265,6 +252,7 @@ Original_Add    DS.W        1                       ; original address
 *~Font size~12~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 
