@@ -389,9 +389,9 @@ ADD_Print_Long      LEA         Output_Long,A1          ; Display '.L' for ADD s
 ADD_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D2                   ; Access Op-mode
-                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D5                   ; Access Op-mode
+                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
                     BEQ         ADD_Des_Check           ; Case: Dn + <ea> -> <ea>
                     BRA         ADD_Dis                 ; Case: <ea> + Dn -> Dn
 
@@ -558,9 +558,9 @@ SUB_Op_mode_Check   CMP.B       #%111,D4                 ; an invalid input
                     CMP.B       #%011,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D2                   ; Access Op-mode
-                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D5                   ; Access Op-mode
+                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
                     BEQ         SUB_Des_Check           ; Case: Dn + <ea> -> <ea>
                     BRA         SUB_Dis                 ; Case: <ea> + Dn -> Dn
 
@@ -924,9 +924,9 @@ AND_Print_Long      LEA         Output_Long,A1          ; Display '.L' for AND s
 AND_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D2                   ; Access Op-mode
-                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D5                   ; Access Op-mode
+                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
                     BEQ         AND_Des_Check           ; Case: Dn ^ <ea> -> <ea>
                     BRA         AND_Source_Check        ; Case: <ea> ^ Dn -> Dn
 
