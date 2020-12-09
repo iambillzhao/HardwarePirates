@@ -15,6 +15,8 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
+    NOT.B     D0
+    NOT.W     (A0)
     LEA       $12,A0
     LEA       $1234,A0
     LEA       $12345678,A0

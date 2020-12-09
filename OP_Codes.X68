@@ -390,9 +390,9 @@ ADD_Print_Long      LEA         Output_Long,A1          ; Display '.L' for ADD s
 ADD_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D5                   ; Access Op-mode
-                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D2                   ; Access Op-mode
+                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
                     BEQ         ADD_Des_Check           ; Case: Dn + <ea> -> <ea>
                     BRA         ADD_Dis                 ; Case: <ea> + Dn -> Dn
 
@@ -559,9 +559,9 @@ SUB_Op_mode_Check   CMP.B       #%111,D4                 ; an invalid input
                     CMP.B       #%011,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D5                   ; Access Op-mode
-                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D2                   ; Access Op-mode
+                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
                     BEQ         SUB_Des_Check           ; Case: Dn + <ea> -> <ea>
                     BRA         SUB_Dis                 ; Case: <ea> + Dn -> Dn
 
@@ -741,10 +741,14 @@ NOT_OP              MOVE.L      A0,D4                   ; move the data from A0 
 *----------------------  NOT: Effective Address  ----------------
 NOT_Effective_Add   CLR         D4                      ; clearing D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111111,D4   ; clear all bits except the effective address
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
                     
                     JSR         EA_DECODE               ; send to EA with D4 holding the effective address (mode,register)
-
+                    RTS
 
 *-----------------------  NOT: Functions  ------------------------      
 NOT_Byte            LEA         Output_Byte,A1          ; Display '.B' for MOVE size
@@ -925,9 +929,9 @@ AND_Print_Long      LEA         Output_Long,A1          ; Display '.L' for AND s
 AND_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D5                   ; Access Op-mode
-                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D2                   ; Access Op-mode
+                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
                     BEQ         AND_Des_Check           ; Case: Dn ^ <ea> -> <ea>
                     BRA         AND_Source_Check        ; Case: <ea> ^ Dn -> Dn
 
