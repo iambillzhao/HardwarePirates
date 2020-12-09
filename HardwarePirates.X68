@@ -46,6 +46,7 @@ BEG:
     LEA     SADD,A1     ; loads starting address to A1
     TRAP    #15         ; gets input from the user
     
+    
     ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
     CMP.W   #$0000,D1   ; compares 0 to D1
     BEQ     INVALIDADD  ; triggers program's invalid branch
@@ -375,6 +376,7 @@ SADD    DS.B    8       ; starting address storage
 EADD    DS.B    8       ; ending address storage
 
 
+
 *--------------------- INCLUDE FILES -----------------------
     INCLUDE 'EA_CODES.X68'  ; includes ea code disassembly
     INCLUDE 'OP_CODES.X68'  ; includes op code disassembly
@@ -389,8 +391,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-
-
 
 
 
