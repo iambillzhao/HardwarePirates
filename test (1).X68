@@ -15,6 +15,19 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
+*    LSL.B     D1,D2     
+*    LSL.W     D1,D2
+*    LSL.W     (A1) ;E3D1
+*    LSL.W     (A1)+ ;E3D9
+    LSL.W     -(A1) ;E3E1
+    LSL.L     D1,D2
+    ASL.B     D1,D2
+    ASL.W     D1,D2
+    ASL.W     (A1)
+    ASL.W     (A1)+
+    ASL.W     -(A1)
+    ASL.L     D1,D2
+
     NOT.B     D0
     NOT.W     (A0)
     LEA       $12,A0
@@ -115,16 +128,16 @@ NOP
     SUB.B     (A1)+,D1
     SUB.B     -(A1),D1
     SUB.W     D1,D2
-*    SUB.W     D1,A1
-*    SUB.W     D1,(A1)
-*    SUB.W     D1,(A1)+
-*    SUB.W     D1,-(A1)
+    SUB.W     D1,A1
+    SUB.W     D1,(A1)
+    SUB.W     D1,(A1)+
+    SUB.W     D1,-(A1)
     SUB.W     A1,D1
     SUB.W     (A1),D1
     SUB.W     (A1)+,D1
     SUB.W     -(A1),D1
     SUB.L     D1,D2
-*    SUB.L     D1,A1
+    SUB.L     D1,A1
     SUB.L     D1,(A1)
     SUB.L     D1,(A1)+
     SUB.L     D1,-(A1)
@@ -143,13 +156,13 @@ NOP
     AND.B     (A1),D1
     AND.B     (A1)+,D1
     AND.B     -(A1),D1
-*    AND.W     D1,D2
+    AND.W     D1,D2
     AND.W     D1,(A1)
     AND.W     D1,(A1)+
     AND.W     D1,-(A1)
-*    AND.W     (A1),D1
-*    AND.W     (A1)+,D1
-*    AND.W     -(A1),D1
+    AND.W     (A1),D1
+    AND.W     (A1)+,D1
+    AND.W     -(A1),D1
     AND.L     D1,D2
     AND.L     D1,(A1)
     AND.L     D1,(A1)+
@@ -219,6 +232,7 @@ label4
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 
 

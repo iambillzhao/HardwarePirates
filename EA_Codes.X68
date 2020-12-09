@@ -210,7 +210,7 @@ BCC_DISP
                 MOVE.L          A4,D5       ; hex value ready to for output
                 
                 MOVE.L          A4,A2
-                MOVE.B          #16,D6
+                MOVE.B          #0  ,D6
                 MOVE.L          #28,D2
                 LEA             HEX_TABLE,A5    ; loads hex table to A5
                 
@@ -219,6 +219,14 @@ BCC_DISP
 *                MOVE.L          Original,A0
                 
                 RTS
+
+DATA_REG_SHIFT
+                MOVE.B          #0,D4
+                
+                JSR             EA_DECODE
+                
+                BRA             DATA_RETURN
+
 
 *---------------------- Hex table ----------------------
 HEX_TABLE       DC.B    '0',0
@@ -252,6 +260,7 @@ Original_Add    DS.W        1                       ; original address
 *~Font size~12~
 *~Tab type~1~
 *~Tab size~4~
+
 
 
 

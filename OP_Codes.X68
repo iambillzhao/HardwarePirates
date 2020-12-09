@@ -958,13 +958,14 @@ AND_Des_Check       CMP.L       #%000,D4                ; an invalid input
 *-----------------------------------------------------------
 
 *--------------------  Shift: Instruction Checks  -----------
-OP_SHIFT            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
-                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
-                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits
-                    
-                    BRA         SHIFT_Size_Check
+*OP_SHIFT            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
+*                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
+*                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits
+*                    
+*                    BRA         SHIFT_Size_Check
 
 *---------------------  Display Shift Type  -----------------
+OP_SHIFT            
 SHIFT_Dis           MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000000000011000,D4   ; clear all bits except the shift type     
                     LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
@@ -995,7 +996,7 @@ Shift_Reg           CLR         D4                      ; clearing D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000111000000000,D4   ; clear all bits except the register     
                     LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
-                    LSR.L       #1,D4
+                    LSR.L       #1,D4   ; 1 = D, 0 = A
        
                     MOVE.L      D4,D5                   ; storing the register/count in D5
                     CLR         D4                      ; clearing D4 
@@ -1012,7 +1013,10 @@ Shift_Reg           CLR         D4                      ; clearing D4
                     BEQ         Shift_Word              ; branch to Word condition
 
                     CMP.B       #%10,D4                 ; checking if the size is Long
-                    BEQ         Shift_Long              ; Branch to Long Condition   
+                    BEQ         Shift_Long              ; Branch to Long Condition
+
+                    CMP.B       #%11,D4
+                    BEQ         Shift_Word     
                  
 *-----------------  Shift: Get I/R  ------------------------
 Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
@@ -1020,11 +1024,33 @@ Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 
                     LSR.L       #5,D4                   ; access the i/r elememt, by shifting 5 places to the right
                     
                     CMP.B       #1,D4
-*                    BEQ         DATA_REG
-                    
+                    BEQ         DATA_REG_SHIFT
+                    CMP.B       #0,D4
+                    BEQ         DATA_ADD_SHIFT
+DATA_RETURN                    
+                    LEA         Comma,A1                ; prints a comma
+                    MOVE.B      #14,D0
+                    TRAP        #15
+
+
                     MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+
                     JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
                     RTS
+                    
+DATA_ADD_SHIFT
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
+                    LSR.L       #3,D4                   ; stores source mode in D4
+
+                    MOVE.L      A0,D5                   
+                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
+                    
+                    JSR         EA_DECODE               ; send to EA with D4 holding the effective address (mode,register)
+                    RTS
+                      
 
 *--------------------  LSL: Functions  ---------------------
 LS_Display          LEA         LS_Output,A1            ; Display 'LS' 
@@ -1069,10 +1095,7 @@ Shift_Long          LEA         Output_Long,A1          ; Display '.L' for LSL s
                     TRAP        #15                     ; task 15 for output
 
                     BRA         Shift_IR                ; return to code
-                    
-SHIFT_Size_Check    CMP.W       #%11,D4                 ; invalid size
-                    BEQ         Invalid_Instruction     
-                    BRA         SHIFT_Dis
+
 
 *----------------------  End of Shift  -----------------------------
 *AS* or LS* printed with the appropriate direction of shift
@@ -1339,6 +1362,7 @@ Invalid_Instruction
 =======
 
 >>>>>>> 018962fda5350c4f8bfecab009911f0861132714
+
 
 *~Font name~Courier New~
 *~Font size~10~
