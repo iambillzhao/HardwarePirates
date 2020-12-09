@@ -46,6 +46,7 @@ BEG:
     LEA     SADD,A1     ; loads starting address to A1
     TRAP    #15         ; gets input from the user
     
+    
     ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
     CMP.W   #$0000,D1   ; compares 0 to D1
     BEQ     INVALIDADD  ; triggers program's invalid branch
@@ -373,6 +374,7 @@ GOODBYE DC.B    CR,LF,'Thank you for using our disassembler!',CR,LF,0
 SADD    DS.B    8       ; starting address storage
 
 EADD    DS.B    8       ; ending address storage
+
 
 
 *--------------------- INCLUDE FILES -----------------------
