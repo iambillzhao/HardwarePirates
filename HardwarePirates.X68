@@ -88,8 +88,8 @@ END:
     CMP.L   D3,D5       ; checks if the ending address is less
     BGT     INVALIDADD  ; ending address is less, invalid
     MOVE.L  A6,D3       ; moves ending address to D3
-    CMP.L   D2,D3
-    BEQ     INVALIDADD
+    CMP.L   D2,D3       ; comapres addresses if they are same
+    BEQ     INVALIDADD  ; same address, invalid
     
     ; BEGIN DISASSEMBLY PROCESS
     LEA     DISBEG,A1   ; loads message to A1
@@ -387,8 +387,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-
-
 
 *~Font name~Courier New~
 *~Font size~10~
