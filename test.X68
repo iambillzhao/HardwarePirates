@@ -15,9 +15,9 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
-    RTS
-    NOP
-    RTS
+    MULS.W    $12,D1
+    MULS.W    $1234,D1
+    MULS.W    $12345678,D1
 
 * Put program code here
 

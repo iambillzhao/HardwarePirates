@@ -613,9 +613,14 @@ MULS_Dis            LEA         MULS_Output,A1          ; Display 'MULS'
                     LSR.L       D0,D7                   ; Isolate the remainder bits       
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
                     MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode dest register
+                    MOVE.W      #0,D4
+                    MOVE.W      D7,D5
+                    
+                    JSR         EA_DECODE
+                    RTS
                     
 *----------------------  MULS: Send to EA  -------------------                    
-                    BRA         EA_MULS                 ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
+*                    BRA         EA_MULS                 ; send to the EA with SRC_MODE,SRC_REGISTER,DEST_MODE,DEST_REGISTER holding the data
  
 *----------------------  MULS: Functions  ------------------- 
 MULS_Mode_Check     CMP.L       #%001,D4                ; an invalid input
@@ -996,7 +1001,7 @@ Shift_IR            MOVE.L      A0,D4                   ; move the data from A0 
                     LSR.L       #5,D4                   ; access the i/r elememt, by shifting 5 places to the right
                     
                     CMP.B       #1,D4
-                    BEQ         DATA_REG
+*                    BEQ         DATA_REG
                     
                     MOVE.B      D4,D6                   ; move the i/r to D6 to be used by ea
                     JSR         EA_DECODE               ; send to EA with D5 holding the count/register, and D6 holding the i/r
@@ -1228,13 +1233,13 @@ MOVE_Output         DC.W        'MOVE',0
 MOVEM_Output        DC.W        'MOVEM',0
 NOP_Output          DC.W        'NOP',0
 LEA_Output          DC.W        'LEA     ',0
-ADD_Output          DC.W        'ADD     ',0
-AND_Output          DC.W        'AND     ',0
+ADD_Output          DC.W        'ADD',0
+AND_Output          DC.W        'AND',0
 JSR_Output          DC.W        'JSR     ',0
 NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
-SUB_Output          DC.W        'SUB     ',0
-MULS_Output         DC.W        'MULS     ',0
+SUB_Output          DC.W        'SUB',0
+MULS_Output         DC.W        'MULS.W     ',0
 BRA_Output          DC.W        'BRA  ',0
 BLT_Output          DC.W        'BLT  ',0
 BGE_Output          DC.W        'BGE  ',0
@@ -1279,6 +1284,7 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
                     
+
 
 
 
