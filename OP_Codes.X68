@@ -324,6 +324,7 @@ ADD_DN              MOVE.W      A0,D7                   ; move the data from A0 
 
 *----------------------  ADD: Send to EA  ------------------- 
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
                     RTS
 
 *--------------------- ADD Dn + <ea> --> <ea>  ----------------------------------
@@ -363,6 +364,7 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 
 *----------------------  ADD: Send to EA  ---------------------------                        
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
                     RTS
                     
 *----------------------  ADD: Functions  -----------------------------------
@@ -486,6 +488,8 @@ SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 
 
 *----------------------  SUB: Send to EA  --------------------------------    
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
        
 *----------------------- SUB Dn + <ea> --> <ea> ----------------------------------
@@ -525,6 +529,8 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
 
 *----------------------  SUB: Send to EA  -----------------------------------                       
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
                     
 *----------------------  SUB: Functions  -------------------
@@ -574,7 +580,8 @@ SUB_Des_Check       CMP.L       #%000,D4                ; an invalid input
 *-----------------------------------------------------------------
 
 *--------------------  MULS: Instruction Check  --------------------
-OP_MULS             CLR         D4
+OP_MULS             MOVE.L      A0,D4
+*                    CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
                     AND.L       #%0000000000111000,D4   ; clearing all bits except Op-mode 
                     LSR.L       #3,D4                   ; Store effective address mode in D4
@@ -847,6 +854,8 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     MOVE.W      D7,D5
                     
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
 
 
@@ -886,6 +895,8 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      D7,D5
                     
                     JSR         EA_DECODE
+                    MOVE.W      Original_Add,D2
+
                     RTS
                     
 *----------------------  AND: Functions  ----------------------------------- 
@@ -1178,9 +1189,10 @@ OP_Branch           MOVE.L      A0,D4                   ; move instruction from 
 *---------------  Branch: Send to EA  ---------------------
 BRA_Send            CLR         D4                  
                     MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
-                    ADD.L       #%0000000011111111,D4   ; isolating the displacemen
+                    AND.L       #%0000000011111111,D4   ; isolating the displacemen
+
+                    JSR         BCC_DISP
                     
-                    JSR         EA_Decode               ; D4 holding the Displacement for the EA
                     RTS                  
                 
 *---------------  Branch: Functions  ---------------------
@@ -1284,6 +1296,9 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
                     
+
+
+
 
 
 

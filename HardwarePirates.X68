@@ -177,6 +177,7 @@ NOW:
     
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
+    MOVE.W  D2,Original_Add
     JSR     00(A3,D4)   ; jsr using word processes
     BRA     CON         ; jumps to the continue branch
 
@@ -388,6 +389,9 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
+
+
 
 
 
