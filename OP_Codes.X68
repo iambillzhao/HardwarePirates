@@ -198,6 +198,7 @@ LEA_Dis             LEA         LEA_Output,A1           ; Display 'LEA'
                     BLT         Invalid_Instruction     ; branch if less than 0
                     
                     MOVE.L      D4,D6                   ; copying the register number into D5
+                    MOVE.W      D4,SRC_REGISTER
                     CLR         D4
                     
 *-----------------------  LEA: Get Effective Address  -------------
@@ -218,7 +219,7 @@ LEA_Dis             LEA         LEA_Output,A1           ; Display 'LEA'
                     TRAP        #15
 
                     MOVE.L      #1,D4                   ; sets the mode to 001
-                    MOVE.L      D6,D5                   ; moves the registration bits to D5
+                    MOVE.W      SRC_REGISTER,D5                   ; moves the registration bits to D5
                     CLR         D6
                    
 
@@ -1334,6 +1335,7 @@ Invalid_Instruction
 =======
 
 >>>>>>> 018962fda5350c4f8bfecab009911f0861132714
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
