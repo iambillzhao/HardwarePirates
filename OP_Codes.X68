@@ -197,7 +197,7 @@ LEA_Dis             LEA         LEA_Output,A1           ; Display 'LEA'
                     CMP.B       #0,D4
                     BLT         Invalid_Instruction     ; branch if less than 0
                     
-                    MOVE.L      D4,D7                   ; copying the register number into D5
+                    MOVE.L      D4,D6                   ; copying the register number into D5
                     CLR         D4
                     
 *-----------------------  LEA: Get Effective Address  -------------
@@ -218,8 +218,8 @@ LEA_Dis             LEA         LEA_Output,A1           ; Display 'LEA'
                     TRAP        #15
 
                     MOVE.L      #1,D4                   ; sets the mode to 001
-                    MOVE.L      D7,D5                   ; moves the registration bits to D5
-                    CLR         D7
+                    MOVE.L      D6,D5                   ; moves the registration bits to D5
+                    CLR         D6
                    
 
 *----------------------  LEA: Send to EA  --------------------------
@@ -286,24 +286,24 @@ Add_By_Bit8         MOVE.L      A0,D4                   ; move the data from A0 
                     BEQ         ADD_EA
                     
 *--------------------- ADD <ea> + Dn --> Dn  ----------------------------------
-ADD_DN              MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
+ADD_DN              MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on  
 
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                     
-                    MOVE.W      D7,SRC_MODE             ; Copy bits to decode source mode
-                    MOVE.W      D7,D4                   ; Copy bits to decode source mode  
+                    MOVE.W      D6,SRC_MODE             ; Copy bits to decode source mode
+                    MOVE.W      D6,D4                   ; Copy bits to decode source mode  
 
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                 
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                    MOVE.W      D7,D5         ; Copy bits to decode source register
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D6,D5         ; Copy bits to decode source register
                     
                     JSR         EA_DECODE
 
@@ -314,13 +314,13 @@ ADD_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
                     MOVE.W      #0,D4                   ; Force Dn dest mode
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                     
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
-                    MOVE.W      D7,D5                   ; Copy bits to decode destination register
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D6,D5                   ; Copy bits to decode destination register
 
 *----------------------  ADD: Send to EA  ------------------- 
                     JSR         EA_DECODE
@@ -331,13 +331,13 @@ ADD_DN              MOVE.W      A0,D7                   ; move the data from A0 
 ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      #0,D4
                     
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on  
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
 
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
 
@@ -345,22 +345,22 @@ ADD_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.B      #14,D0
                     TRAP        #15
                                     
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on   
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on   
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
 
-                    MOVE.W      D7,DEST_MODE            ; Copy bits to decode destination mode
-                    MOVE.W      D7,D4                    
+                    MOVE.W      D6,DEST_MODE            ; Copy bits to decode destination mode
+                    MOVE.W      D6,D4                    
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits            
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits            
                     
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D6,D5
 
 *----------------------  ADD: Send to EA  ---------------------------                        
                     JSR         EA_DECODE
@@ -451,23 +451,23 @@ SUB_By_Bit8         MOVE.L      A0,D4                   ; move the data from A0 
                     BEQ         SUB_EA
 
 *------------------------ SUB Dn - <ea> --> Dn  --------------------------
-SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
+SUB_DN              MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on  
 
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                     
-                    MOVE.W      D7,SRC_MODE             ; Copy bits to decode source mode
-                    MOVE.W      D7,D4
+                    MOVE.W      D6,SRC_MODE             ; Copy bits to decode source mode
+                    MOVE.W      D6,D4
                     
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                 
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
 
@@ -478,13 +478,13 @@ SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
                     MOVE.W      #0,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                     
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D6,D5
 
 *----------------------  SUB: Send to EA  --------------------------------    
                     JSR         EA_DECODE
@@ -496,13 +496,13 @@ SUB_DN              MOVE.W      A0,D7                   ; move the data from A0 
 SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      #0,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on  
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
 
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D6,D5
                 
                     JSR         EA_DECODE
                     
@@ -510,22 +510,22 @@ SUB_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.B      #14,D0
                     TRAP        #15
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on   
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on   
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
 
-                    MOVE.W      D7,DEST_MODE            ; Copy bits to decode destination mode
-                    MOVE.W      D7,D4
+                    MOVE.W      D6,DEST_MODE            ; Copy bits to decode destination mode
+                    MOVE.W      D6,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits            
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits            
                     
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D6,D5
 
 *----------------------  SUB: Send to EA  -----------------------------------                       
                     JSR         EA_DECODE
@@ -596,20 +596,20 @@ MULS_Dis            LEA         MULS_Output,A1          ; Display 'MULS'
                     MOVE.B      #14,D0                  ; trap rask 14 is loaded into D0
                     TRAP        #15                     ; trap 15 is for output
                     
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits    
-                    MOVE.W      D7,SRC_MODE             ; Copy bits to src dest mode
-                    MOVE.W      D7,D4
+                    LSR.W       D0,D6                   ; Isolate the remainder bits    
+                    MOVE.W      D6,SRC_MODE             ; Copy bits to src dest mode
+                    MOVE.W      D6,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits         
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to src dest register
-                    MOVE.W      D7,D5
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits         
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to src dest register
+                    MOVE.W      D6,D5
                 
                     JSR         EA_DECODE
                     
@@ -617,14 +617,14 @@ MULS_Dis            LEA         MULS_Output,A1          ; Display 'MULS'
                     MOVE.B      #14,D0
                     TRAP        #15                
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on  
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.L       D0,D7                   ; Isolate the remainder bits       
+                    LSR.L       D0,D6                   ; Isolate the remainder bits       
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode dest register
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode dest register
                     MOVE.W      #0,D4
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
                     RTS
@@ -821,23 +821,23 @@ And_By_Bit8         MOVE.L      A0,D4                   ; move the data from A0 
                     BEQ         AND_EA
                     
 *--------------------- AND <ea> + Dn --> Dn  ----------------------------------
-AND_DN              MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+AND_DN              MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
 
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                     
-                    MOVE.W      D7,SRC_MODE             ; Copy bits to decode source mode
-                    MOVE.W      D7,D4
+                    MOVE.W      D6,SRC_MODE             ; Copy bits to decode source mode
+                    MOVE.W      D6,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                 
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
 
@@ -848,13 +848,13 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
                     MOVE.W      #0,DEST_MODE            ; Force Dn dest mode
                     MOVE.W      #0,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
                     
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
                     MOVE.W      Original_Add,D2
@@ -866,13 +866,13 @@ AND_DN              MOVE.W      A0,D7                   ; move the data from A0 
 AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.W      #0,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on  
-                    LSL.W       #4,D7                   ; Cut up to bit 11
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on  
+                    LSL.W       #4,D6                   ; Cut up to bit 11
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
 
-                    MOVE.W      D7,SRC_REGISTER         ; Copy bits to decode source register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,SRC_REGISTER         ; Copy bits to decode source register
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
                     
@@ -880,22 +880,22 @@ AND_EA              MOVE.W      #0,SRC_MODE             ; Force Dn source mode
                     MOVE.B      #14,D0
                     TRAP        #15
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on   
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on   
                     MOVE.B      #10,D0                  ; Prepare a shift of 10 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 5
+                    LSL.W       D0,D6                   ; Cut up to bit 5
                     MOVE.B      #13,D0                  ; Prepare a shift of 13 bits
-                    LSR.W       D0,D7                   ; Isolate the remainder bits
+                    LSR.W       D0,D6                   ; Isolate the remainder bits
 
-                    MOVE.W      D7,DEST_MODE            ; Copy bits to decode destination mode
-                    MOVE.W      D7,D4
+                    MOVE.W      D6,DEST_MODE            ; Copy bits to decode destination mode
+                    MOVE.W      D6,D4
                 
-                    MOVE.W      A0,D7                   ; move the data from A0 and load it into D7 to be worked on 
+                    MOVE.W      A0,D6                   ; move the data from A0 and load it into D7 to be worked on 
                     MOVE.B      #13,D0                  ; Prepare a shift of 12 bits
-                    LSL.W       D0,D7                   ; Cut up to bit 2
-                    LSR.W       D0,D7                   ; Isolate the remainder bits            
+                    LSL.W       D0,D6                   ; Cut up to bit 2
+                    LSR.W       D0,D6                   ; Isolate the remainder bits            
                     
-                    MOVE.W      D7,DEST_REGISTER        ; Copy bits to decode destination register
-                    MOVE.W      D7,D5
+                    MOVE.W      D6,DEST_REGISTER        ; Copy bits to decode destination register
+                    MOVE.W      D6,D5
                     
                     JSR         EA_DECODE
                     MOVE.W      Original_Add,D2
@@ -1322,7 +1322,10 @@ Invalid_Instruction
                     
 
 
-
+                   
+                   
+                   
+             
 
 
 
