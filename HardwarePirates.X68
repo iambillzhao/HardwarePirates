@@ -44,7 +44,7 @@ BEG:
     MOVE.B  #2,D0       ; sets to task 2
     LEA     SADD,A1     ; loads starting address to A1
     TRAP    #15         ; gets input from the user
-    
+
     ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
     CMP.W   #$0000,D1   ; compares 0 to D1
     BEQ     INVALIDADD  ; triggers program's invalid branch
@@ -173,9 +173,23 @@ NOW:
     
     CMP     D3,D2       ; comapres curr and ending address
     BGT     ASK         ; disassembly completed
+
+    MOVE.W  D2,Original_Add ; moves D2 address to add
+    MOVE.L  D2,A2       ; moves data from D2 to A2
+    LEA     HEX_TABLE,A5 ; loads hex tables
+    MOVE.B  #0,D6       ; moves 0 as byte to D6
+    MOVE.L  #28,D2      ; moves 28 to D2
     
+    JSR     LOOP        ; loops in the branch
+    MOVE.W  Original_Add,D2 ; moves word of original add
+    
+    LEA     TAB,A1      ; adding tab
+    MOVE.B  #14,D0      ; trap task 14 is loaded into D0
+    TRAP    #15         ; task 15 for output
+
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
+    MOVE.W  D2,Original_Add ; moves data in D2 to add
     JSR     00(A3,D4)   ; jsr using word processes
     BRA     CON         ; jumps to the continue branch
 
@@ -257,6 +271,7 @@ S0100:
     CMP.W   #%1100,D4   ; compares to MOVEM unique bits
     BEQ     OP_MOVEM    ; redirects to MOVEM
     BRA     OP_LEA      ; redirects to LEA otherwise
+
 ; for BRA,BCC (BLT,BGE,BEQ)
 S0110:
     CLR     D4          ; clears data register D4
@@ -273,9 +288,9 @@ S1100:
     MOVE.L  A0,D4       ; copies from A0 to D4
     AND.L   #%0000001111000000,D4 ; gets 4 bits
     LSR.L   #6,D4       ; shifts right 6 bits
-    CMP.W   #%0111,D4   ; compares with MULS unique bits
-    BEQ     OP_MULS     ; redirects to MULS
     CMP.W   #%1111,D4   ; compares with MULS unique bits
+    BEQ     OP_MULS     ; redirects to MULS
+    CMP.W   #%0111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
     BRA     OP_AND      ; redirects to AND otherwise
     
@@ -349,7 +364,8 @@ LF      EQU     $0A
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
         DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0      
 
-INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
+INPUTBEG DC.B   CR,LF,'FORMAT: CAPITALIZED 8-BIT ADDRESS, EXAMPLE: "000092C0"'
+         DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
