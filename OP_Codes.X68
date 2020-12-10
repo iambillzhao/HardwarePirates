@@ -1135,12 +1135,11 @@ MOVEM_Dir           CLR         D4                      ; clears D4
 *---------------  MOVEM: Effective Address  ----------------                    
                     CLR         D4                      ; clears D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-*                    AND.L       #%0000000000111111,D4   ; isolate the effective address
                     AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
                     LSR.L       #3,D4                   ; stores source mode in D4
                     MOVE.L      A0,D5                   
                     AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
-                    JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
+                    *JSR         EA_DECODE               ; send to EA with D5 with direction bit and D4 with effective address (mode, register)
                     RTS
 *-------------- MOVEM: Functions  --------------------------
 MOVEM_Word          LEA         Output_Word,A1          ; Display '.W' for MOVEM size
@@ -1312,6 +1311,7 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
              
+
 
 
 *~Font name~Courier New~
