@@ -162,6 +162,18 @@ BACK:
     
 *-------------------- DISASSEMBLY --------------------------
 NOW:
+    ; A0 TO STORE CODE TO DISASSEMBLE
+    MOVE.W  A0,D4       ; moves A0 to D4
+    CLR     D0          ; clears D0
+    
+    ; GETS MOST SIGNIFICANT 4 BYTES
+    MOVE.B  #12,D0      ; puts 12 in D0
+    LSR.W   D0,D4       ; shifts D4 by 12
+    MULU    #6,D4       ; gets offset
+    
+    CMP     D3,D2       ; comapres curr and ending address
+    BGT     ASK         ; disassembly completed
+
     MOVE.W  D2,Original_Add ; moves D2 address to add
     MOVE.L  D2,A2       ; moves data from D2 to A2
     LEA     HEX_TABLE,A5 ; loads hex tables
@@ -175,18 +187,6 @@ NOW:
     MOVE.B  #14,D0      ; trap task 14 is loaded into D0
     TRAP    #15         ; task 15 for output
 
-    ; A0 TO STORE CODE TO DISASSEMBLE
-    MOVE.W  A0,D4       ; moves A0 to D4
-    CLR     D0          ; clears D0
-    
-    ; GETS MOST SIGNIFICANT 4 BYTES
-    MOVE.B  #12,D0      ; puts 12 in D0
-    LSR.W   D0,D4       ; shifts D4 by 12
-    MULU    #6,D4       ; gets offset
-    
-    CMP     D3,D2       ; comapres curr and ending address
-    BGT     ASK         ; disassembly completed
-    
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
     MOVE.W  D2,Original_Add ; moves data in D2 to add
@@ -402,6 +402,7 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
 
 *~Font name~Courier New~
 *~Font size~10~

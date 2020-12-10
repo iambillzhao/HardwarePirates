@@ -1282,7 +1282,7 @@ NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
 MULS_Output         DC.W        'MULS.W     ',0
-BRA_Output          DC.W        'BRA    ',0
+BRA_Output          DC.W        'BRA       ',0
 BLT_Output          DC.W        'BLT',0
 BGE_Output          DC.W        'BGE',0
 BEQ_Output          DC.W        'BEQ',0
@@ -1324,6 +1324,7 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
              
+
 
 
 

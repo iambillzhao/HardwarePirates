@@ -15,8 +15,8 @@ start		EQU	$00009000	* ORG and END address
 		ORG	start
 
 NOP
-    MOVE.B    D0,D1
-    MOVE.B    D0,(A0)
+    MOVEM.W   A1-A7,$1234
+    MOVEM.L   A1-A7,$1234
     MOVEM.W   A1-A7,$12345678
     MOVEM.L   D1-D7,$12345678
     MOVEM.W   (A1),A1/D7
@@ -245,6 +245,7 @@ label4
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 
 
