@@ -155,15 +155,12 @@ Imm_Data        ADD.W           #2,D2       ; increment address by 2
                 MOVE.L          Original,A0
                 RTS
                                 
-Imm_Long        ADDA.W          #2, A6
-                
+Imm_Long        ADDA.W          #2, A6                
                 CLR.L           D6
                 MOVE.L          (A6),D6
-*                MOVE.L          #8,D7
-*                JSR             PRINT_DATA
                 ADDA.W          #4, A2
                 RTS
-*                BRA             EA_INVALID
+
 LOOP            MOVE.L          A2,D1
                 LSL.L           D6,D1
                 LSR.L           D2,D1
@@ -235,6 +232,7 @@ Pound           DC.W    '#',0
 Branch_Size     DS.W        1                       ; branch size
 Original        DS.W        1                       ; original data
 Original_Add    DS.W        1                       ; original address
+
 
 
 

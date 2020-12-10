@@ -803,14 +803,19 @@ NOT_Size_Check      CMP.B       #%11,D4                 ; invalid size
 *-----------------------------------------------------------------
 
 *--------------------  AND: Instruction Check  --------------------
-OP_AND              CLR         D4
-                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
-                    AND.L       #%0000000111000000,D4   ; clearing all bits except Op-mode 
-                    LSR.L       #6,D4                   ; Store Op-mode in D4
+*OP_AND              CLR         D4
+*                    CLR         D3
+*                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
+*                    MOVE.L      A0,D6                   ; move the data from A0 (the instruction) and load it into D6 to be worked on 
+*                    AND.L       #%0000000111000000,D4   ; clearing all bits except Op-mode 
+*                    LSR.L       #6,D6                   ; Store Op-mode in D4
+*                    AND.L       #%0000000000111000,D3   ; clearing all bits except EA Mode
+*                    LSR.L       #3,D6                   ; Store EA mode in D6
 
-                    BRA         AND_Op_mode_Check       ; branch to check the Op-mode 
+*                    BRA         AND_Op_mode_Check       ; branch to check the Op-mode 
 
 *------------------------  AND: Diplay AND  ----------------------     
+OP_AND 
 AND_Dis             LEA         AND_Output,A1           ; Display 'AND' 
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output  
@@ -943,17 +948,17 @@ AND_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
 
                     MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
                     LSR.L       #2,D5                   ; Access Op-mode
-                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
+                    CMP.B       #%1,D5                 ; Check the first digit of the opmode
                     BEQ         AND_Des_Check           ; Case: Dn ^ <ea> -> <ea>
                     BRA         AND_Source_Check        ; Case: <ea> ^ Dn -> Dn
 
-AND_Source_Check    CMP.L       #%001,D4                ; an invalid input
+AND_Source_Check    CMP.L       #%001,D3                ; an invalid input
                     BEQ         Invalid_Instruction     ; moves on to next instruction           
                     BRA         AND_Dis
 
-AND_Des_Check       CMP.L       #%000,D4                ; an invalid input
+AND_Des_Check       CMP.L       #%000,D3                ; an invalid input
                     BEQ         Invalid_Instruction     ; moves on to next instruction           
-                    CMP.L       #%001,D4                ; an invalid input
+                    CMP.L       #%001,D3                ; an invalid input
                     BEQ         Invalid_Instruction     ; moves on to next instruction           
                     BRA         AND_Dis
                     
@@ -975,8 +980,8 @@ OP_SHIFT
         
 SHIFT_Dis           MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
                     AND.L       #%0000000000011000,D4   ; clear all bits except the shift type     
-                    LSR.L       #8,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
-                    LSR.L       #1,D4
+                    LSR.L       #3,D4                   ; access the registers elements of the instruction, do this by shifting the number the right 9 bits
+                   
                     
                     CMP.B       #%01,D4                 ; checking to see if LS 
                     BEQ         LS_Display              ; branch if LS
@@ -984,7 +989,7 @@ SHIFT_Dis           MOVE.L      A0,D4                   ; move the data from A0 
                     CMP.B       #%00,D4                 ; checking to if AS
                     BEQ         AS_Display              ; branch if AS
                     
-                    BRA         Invalid_Instruction     ; invailid insruction and move on
+                    BRA         SHIFT_NXT
                     
 *-------------------- LSL: Direction Check  ----------------
 Shift_Dir           MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
@@ -1104,6 +1109,21 @@ Mem_Word            LEA         Output_Word,A1          ; Display '.W' for LSL s
                     TRAP        #15                     ; task 15 for output
 
                     BRA         DATA_ADD_SHIFT
+                    
+SHIFT_NXT           CLR         D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
+                    AND.L       #%0000111000000000,D4
+                    LSR.L       #8,D4
+                    LSR.L       #1,D4
+                    
+                    CMP.W       #%000,D4
+                    BEQ         AS_Display
+                    
+                    CMP.W       #%001,D4
+                    BEQ         LS_Display
+                    
+                    BRA         Invalid_Instruction
+                            
 *----------------------  End of Shift  -----------------------------
 *AS* or LS* printed with the appropriate direction of shift
 *printed instruciton size 
