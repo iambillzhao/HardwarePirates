@@ -255,6 +255,13 @@ LEA_Mode_Check      CMP.W       #%000,D4
 *--------------------  ADD: Instruction Check  --------------------
 OP_ADD              CLR         D4
                     MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
+                    AND.L       #%0000000011000000,D4   ; clearing all bits except ADDA identifier
+                    LSR.L       #6,D4
+                    
+                    BRA         ADD_ADDA_Check
+
+ADD_Next             CLR         D4
+                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on 
                     AND.L       #%0000000111000000,D4   ; clearing all bits except Op-mode 
                     LSR.L       #6,D4                   ; Store Op-mode in D4
                     
@@ -391,9 +398,9 @@ ADD_Print_Long      LEA         Output_Long,A1          ; Display '.L' for ADD s
 ADD_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D2                   ; Access Op-mode
-                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D5                   ; Access Op-mode
+                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
                     BEQ         ADD_Des_Check           ; Case: Dn + <ea> -> <ea>
                     BRA         ADD_Dis                 ; Case: <ea> + Dn -> Dn
 
@@ -402,6 +409,10 @@ ADD_Des_Check       CMP.L       #%000,D4                ; an invalid input
                     CMP.L       #%001,D4                ; an invalid input
                     BEQ         Invalid_Instruction     ; moves on to next instruction           
                     BRA         ADD_Dis
+                    
+ADD_ADDA_Check      CMP.B       #%11,D4
+                    BEQ         Invalid_Instruction
+                    BRA         ADD_Next
 
                     
 *---------------------  End of ADD  --------------------------------
@@ -560,9 +571,9 @@ SUB_Op_mode_Check   CMP.B       #%111,D4                 ; an invalid input
                     CMP.B       #%011,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D2                   ; Access Op-mode
-                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D5                   ; Access Op-mode
+                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
                     BEQ         SUB_Des_Check           ; Case: Dn + <ea> -> <ea>
                     BRA         SUB_Dis                 ; Case: <ea> + Dn -> Dn
 
@@ -930,9 +941,9 @@ AND_Print_Long      LEA         Output_Long,A1          ; Display '.L' for AND s
 AND_Op_mode_Check   CMP.B       #%11,D4                 ; an invalid input
                     BEQ         Invalid_Instruction
 
-                    MOVE.L      D4,D2                   ; move the data from D4 and load it into D2 to be worked on         
-                    LSR.L       #2,D2                   ; Access Op-mode
-                    CMP.B       #%01,D2                 ; Check the first digit of the opmode
+                    MOVE.L      D4,D5                   ; move the data from D4 and load it into D2 to be worked on         
+                    LSR.L       #2,D5                   ; Access Op-mode
+                    CMP.B       #%01,D5                 ; Check the first digit of the opmode
                     BEQ         AND_Des_Check           ; Case: Dn ^ <ea> -> <ea>
                     BRA         AND_Source_Check        ; Case: <ea> ^ Dn -> Dn
 
@@ -1165,7 +1176,9 @@ MOVEM_Mode_Check    CMP.W       #%000,D4
 *Movem and its size have been printed
 *D4 holds the effective address (mode, register)
 *D5 holds the direction bit
-*-----------------------------------------------------------------         
+*-----------------------------------------------------------------   
+
+      
 *------------------------  Branch Group  -------------------
 * Written by :  Anna Jennings
 * Date       :  11/16/2020
@@ -1261,10 +1274,10 @@ Output_Long         DC.W        '.L     ',0
 MOVE_Output         DC.W        'MOVE',0
 MOVEM_Output        DC.W        'MOVEM',0
 NOP_Output          DC.W        'NOP',0
-LEA_Output          DC.W        'LEA     ',0
+LEA_Output          DC.W        'LEA       ',0
 ADD_Output          DC.W        'ADD',0
 AND_Output          DC.W        'AND',0
-JSR_Output          DC.W        'JSR     ',0
+JSR_Output          DC.W        'JSR       ',0
 NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
