@@ -267,10 +267,15 @@ S0100:
     CMP.W   #%0110,D4   ; compares to NOT unique bits
     BEQ     OP_NOT      ; redirects to NOT
     CMP.W   #%1000,D4   ; compares to MOVEM unique bits
-    BEQ     OP_MOVEM    ; redirects to MOVEM
+    ; DISABLES MOVEM
+    BEQ     SS
+*    BEQ     OP_MOVEM    ; redirects to MOVEM
     CMP.W   #%1100,D4   ; compares to MOVEM unique bits
-    BEQ     OP_MOVEM    ; redirects to MOVEM
+    ; DISABLES MOVEM
+    BEQ     SS
+*    BEQ     OP_MOVEM    ; redirects to MOVEM
     BRA     OP_LEA      ; redirects to LEA otherwise
+
 ; for BRA,BCC (BLT,BGE,BEQ)
 S0110:
     CLR     D4          ; clears data register D4
@@ -401,7 +406,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
