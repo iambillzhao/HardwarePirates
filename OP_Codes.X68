@@ -1268,7 +1268,7 @@ NOT_Output          DC.W        'NOT',0
 RTS_Output          DC.W        'RTS',0
 SUB_Output          DC.W        'SUB',0
 MULS_Output         DC.W        'MULS.W     ',0
-BRA_Output          DC.W        'BRA  ',0
+BRA_Output          DC.W        'BRA    ',0
 BLT_Output          DC.W        'BLT',0
 BGE_Output          DC.W        'BGE',0
 BEQ_Output          DC.W        'BEQ',0
@@ -1276,7 +1276,7 @@ LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
 L_Output            DC.W        'L',0
-DATA                DC.W        'DATA     ',0
+DATA                DC.W        'DATA      ',0
 Next_Line           DC.W        CR,LF,0
 Space               DC.W        ' ',0
 Comma               DC.W        ',',0
@@ -1291,14 +1291,11 @@ EA_ADD
 EA_SUB
 EA_MULS
 Invalid_Instruction 
-*                    MOVE.L      D2,D1
-*                    MOVE.B      #3,D0
-*                    TRAP        #15
+
                     LEA         Data,A1                 ; Displaying the Data part of Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
 
-*                    MOVE.W  D2,Original_Add
                     MOVE.L  A0,A2
                     LEA     HEX_TABLE,A5
                     MOVE.B  #0,D6
@@ -1313,6 +1310,7 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
              
+
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
