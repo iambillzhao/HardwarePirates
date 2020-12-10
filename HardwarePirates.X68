@@ -364,7 +364,8 @@ LF      EQU     $0A
 WELCOME DC.B    'Welcome to CSS 422 Final Project Disassembler!',CR,LF
         DC.B    'Written by Anna Jennings, Bill Zhao, Lawrence Fiesta, and Lexun Chi',CR,LF,0      
 
-INPUTBEG DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
+INPUTBEG DC.B   CR,LF,'FORMAT: CAPITALIZED 8-BIT ADDRESS, EXAMPLE: "000092C0"'
+         DC.B   CR,LF,'PLEASE ENTER THE STARTING ADDRESS: ',0
 
 INPUTEND DC.B   CR,LF,'PLEASE ENTER THE ENDING ADDRESS: ',0
 
@@ -402,7 +403,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-
 
 *~Font name~Courier New~
 *~Font size~10~
