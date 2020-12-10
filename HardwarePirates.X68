@@ -164,6 +164,19 @@ BACK:
     
 *-------------------- DISASSEMBLY --------------------------
 NOW:
+    MOVE.W  D2,Original_Add
+    MOVE.L  D2,A2
+    LEA     HEX_TABLE,A5
+    MOVE.B  #0,D6
+    MOVE.L  #28,D2
+    
+    JSR     LOOP
+    MOVE.W  Original_Add,D2
+    
+    LEA     TAB,A1
+    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
+    TRAP        #15                     ; task 15 for output
+
     ; A0 TO STORE CODE TO DISASSEMBLE
     MOVE.W  A0,D4       ; moves A0 to D4
     CLR     D0          ; clears D0
@@ -189,6 +202,7 @@ CON:
     TRAP    #15         ; trap 15
  
     ; INCREMENT ADDRESS
+    
     ADD.W   #2,D2       ; increment address by 2
     MOVE.L  D2,A0       ; copies data from D2 to A0
     MOVE.W  (A0),D0     ; copies data from A0 to D0
@@ -391,6 +405,7 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
+
 
 
 

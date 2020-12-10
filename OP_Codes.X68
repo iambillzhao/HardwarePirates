@@ -959,12 +959,7 @@ AND_Des_Check       CMP.L       #%000,D4                ; an invalid input
 *-----------------------------------------------------------
 
 *--------------------  Shift: Instruction Checks  -----------
-OP_SHIFT            MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on               
-                    AND.L       #%0000000011000000,D4   ; clear all bits except the size     
-                    LSR.L       #6,D4                   ; access the size element of the instruction, do this by shifting the number the right 12 bits
-
-                    BRA         SHIFT_Size_Check
-
+OP_SHIFT
 *---------------------  Display Shift Type  -----------------
         
 SHIFT_Dis           MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
@@ -1047,18 +1042,6 @@ DATA_ADD_SHIFT
                     MOVE.L      A0,D5                   
                     AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
                     
-                    JSR         EA_DECODE               ; send to EA with D4 holding the effective address (mode,register)
-                    RTS
-                      
-
-DATA_ADD_SHIFT
-                    MOVE.L      A0,D4                   ; move the data from A0 (the instruction) and load it into D4 to be worked on
-                    AND.L       #%0000000000111000,D4   ; clearing all bits except Source Mode
-                    LSR.L       #3,D4                   ; stores source mode in D4
-
-                    MOVE.L      A0,D5                   
-                    AND.L       #%0000000000000111,D5   ; clears all bits except source registration and stores it in D5                 
-
                     JSR         EA_DECODE               ; send to EA with D4 holding the effective address (mode,register)
                     RTS
 
@@ -1293,10 +1276,12 @@ LS_Output           DC.W        'LS',0
 AS_Output           DC.W        'AS',0
 R_Output            DC.W        'R',0
 L_Output            DC.W        'L',0
-DATA                DC.W        ' DATA ',0
+DATA                DC.W        'DATA     ',0
 Next_Line           DC.W        CR,LF,0
 Space               DC.W        ' ',0
 Comma               DC.W        ',',0
+TAB                 DC.W        '     ',0
+
 SRC_MODE            DS.W        1                       ; Storage for the source EA mode type
 SRC_REGISTER        DS.W        1                       ; Storage for the source EA register ID  
 DEST_MODE           DS.W        1                       ; Storage for the destination EA mode type
@@ -1306,42 +1291,28 @@ EA_ADD
 EA_SUB
 EA_MULS
 Invalid_Instruction 
-                    MOVE.L      D2,D1
-                    MOVE.B      #3,D0
-                    TRAP        #15
+*                    MOVE.L      D2,D1
+*                    MOVE.B      #3,D0
+*                    TRAP        #15
                     LEA         Data,A1                 ; Displaying the Data part of Invalid instruction message
                     MOVE.B      #14,D0                  ; Loading the invalid input message into D0
                     TRAP        #15
-*                    MOVE.L      (A0),A1
-*                    MOVE.B      #1,D0
-*                    TRAP        #15
-*
+
+*                    MOVE.W  D2,Original_Add
+                    MOVE.L  A0,A2
+                    LEA     HEX_TABLE,A5
+                    MOVE.B  #0,D6
+                    MOVE.L  #28,D2
+    
+                    JSR     LOOP
+                    MOVE.W  Original_Add,D2
+
                     BRA         CON                                  
                     
                     SIMHALT                             ; stop code if failed input
                         
                     END    START        ; last line of source
-                    
-<<<<<<< HEAD
-
-
-                   
-                   
-                   
              
-
-
-
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 018962fda5350c4f8bfecab009911f0861132714
-
-
-
-=======
->>>>>>> 1ca2652046da8d2ac8d2d7fe8caa9c320bdccb03
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
