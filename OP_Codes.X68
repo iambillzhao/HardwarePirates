@@ -968,10 +968,10 @@ SHIFT_Dis           MOVE.L      A0,D4                   ; move the data from A0 
                     LSR.L       #1,D4
                     
                     CMP.B       #%01,D4                 ; checking to see if LS 
-                    BRA         LS_Display              ; branch if LS
+                    BEQ         LS_Display              ; branch if LS
                     
                     CMP.B       #%00,D4                 ; checking to if AS
-                    BRA         AS_Display              ; branch if AS
+                    BEQ         AS_Display              ; branch if AS
                     
                     BRA         Invalid_Instruction     ; invailid insruction and move on
                     
@@ -981,10 +981,10 @@ Shift_Dir           MOVE.L      A0,D4                   ; move the data from A0 
                     LSR.L       #8,D4                   ; access the direction element of the instruction, do this by shifting the number the right 8 bits
                     
                     CMP.B       #%1,D4                  ; if the bit is a 1 the direction is left 
-                    BRA         Left_Dir_Output
+                    BEQ         Left_Dir_Output
                     
                     CMP.B       #%0,D4                  ; if the bit is a 0 the direction is right                   
-                    BRA         Right_Dir_Output        ; branch if right direction
+                    BEQ         Right_Dir_Output        ; branch if right direction
                    
 *----------------  Shift: Get Register/Count  -------------
 Shift_Reg           CLR         D4                      ; clearing D4
