@@ -180,7 +180,7 @@ LOOP            MOVE.L          A2,D1
                 RTS
 BCC_DISP        
                 MOVEA.L         D2,A4
-                ADD.W           #$2,A4
+                ADD.W           #$4,A4
                 
                 CLR             D6
                 MOVE.B          D4,D6
@@ -232,8 +232,10 @@ Minus           DC.W    '-',0
 Dollar          DC.W    '$',0
 Pound           DC.W    '#',0
 
+Branch_Size     DS.W        1                       ; branch size
 Original        DS.W        1                       ; original data
 Original_Add    DS.W        1                       ; original address
+
 
 
 *~Font name~Courier New~

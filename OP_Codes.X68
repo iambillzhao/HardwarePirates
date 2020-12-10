@@ -1198,14 +1198,14 @@ BRA_Size            CLR         D4
                     AND.L       #%0000000011111111,D4   ; isolating the displacement
                     
                     CMP.L       #%00000000,D4
+                    BEQ         BRA_Word
                     BRA         BRA_Byte
-                    BRA         BRA_Word
 *---------------  Branch: Send to EA  ---------------------
 BRA_Send            CLR         D4                  
                     MOVE.L      A0,D4                   ; move instruction from A0 to D4 to be worked on
                     AND.L       #%0000000011111111,D4   ; isolating the displacement
                     JSR         BCC_DISP
-                    
+
                     RTS                  
                 
 *---------------  Branch: Functions  ---------------------
@@ -1238,7 +1238,9 @@ BRA_Byte            LEA         Output_Byte,A1          ; Display '.B' for BRA s
 BRA_Word            LEA         Output_Word,A1          ; Display '.W' for BRA size
                     MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
                     TRAP        #15                     ; task 15 for output
-                   
+                    ADD.W       #2,Original_Add
+*                    ADD.B       #2,D2
+*                    MOVE.W      D2,Original_Add
                     BRA         BRA_Send                ; return to code                   
                                     
 *------------------ End of Branch  -------------------------
@@ -1298,7 +1300,7 @@ Invalid_Instruction
 
                     MOVE.L  A0,A2
                     LEA     HEX_TABLE,A5
-                    MOVE.B  #0,D6
+                    MOVE.B  #16,D6
                     MOVE.L  #28,D2
     
                     JSR     LOOP
@@ -1310,6 +1312,7 @@ Invalid_Instruction
                         
                     END    START        ; last line of source
              
+
 
 *~Font name~Courier New~
 *~Font size~10~
