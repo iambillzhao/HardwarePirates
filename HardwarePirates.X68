@@ -8,7 +8,6 @@
     ORG    $1000
     
 START:                  ; first instruction of program
-                
 
 *-------------------------  I/O  ---------------------------
 * Written by :  Bill Zhao
@@ -45,8 +44,7 @@ BEG:
     MOVE.B  #2,D0       ; sets to task 2
     LEA     SADD,A1     ; loads starting address to A1
     TRAP    #15         ; gets input from the user
-    
-    
+
     ; CHECK FOR VALIDITY, ERROR INVALIDADD IF INVALID
     CMP.W   #$0000,D1   ; compares 0 to D1
     BEQ     INVALIDADD  ; triggers program's invalid branch
@@ -90,8 +88,8 @@ END:
     CMP.L   D3,D5       ; checks if the ending address is less
     BGT     INVALIDADD  ; ending address is less, invalid
     MOVE.L  A6,D3       ; moves ending address to D3
-    CMP.L   D2,D3
-    BEQ     INVALIDADD
+    CMP.L   D2,D3       ; comapres addresses if they are same
+    BEQ     INVALIDADD  ; same address, invalid
     
     ; BEGIN DISASSEMBLY PROCESS
     LEA     DISBEG,A1   ; loads message to A1
@@ -164,18 +162,18 @@ BACK:
     
 *-------------------- DISASSEMBLY --------------------------
 NOW:
-    MOVE.W  D2,Original_Add
-    MOVE.L  D2,A2
-    LEA     HEX_TABLE,A5
-    MOVE.B  #0,D6
-    MOVE.L  #28,D2
+    MOVE.W  D2,Original_Add ; moves D2 address to add
+    MOVE.L  D2,A2       ; moves data from D2 to A2
+    LEA     HEX_TABLE,A5 ; loads hex tables
+    MOVE.B  #0,D6       ; moves 0 as byte to D6
+    MOVE.L  #28,D2      ; moves 28 to D2
     
-    JSR     LOOP
-    MOVE.W  Original_Add,D2
+    JSR     LOOP        ; loops in the branch
+    MOVE.W  Original_Add,D2 ; moves word of original add
     
-    LEA     TAB,A1
-    MOVE.B      #14,D0                  ; trap task 14 is loaded into D0
-    TRAP        #15                     ; task 15 for output
+    LEA     TAB,A1      ; adding tab
+    MOVE.B  #14,D0      ; trap task 14 is loaded into D0
+    TRAP    #15         ; task 15 for output
 
     ; A0 TO STORE CODE TO DISASSEMBLE
     MOVE.W  A0,D4       ; moves A0 to D4
@@ -191,7 +189,7 @@ NOW:
     
     ; USE JUMP TABLE OPCODES STORED IN A3
     LEA     OPCODES,A3  ; loads op-code jump table
-    MOVE.W  D2,Original_Add
+    MOVE.W  D2,Original_Add ; moves data in D2 to add
     JSR     00(A3,D4)   ; jsr using word processes
     BRA     CON         ; jumps to the continue branch
 
@@ -202,7 +200,6 @@ CON:
     TRAP    #15         ; trap 15
  
     ; INCREMENT ADDRESS
-    
     ADD.W   #2,D2       ; increment address by 2
     MOVE.L  D2,A0       ; copies data from D2 to A0
     MOVE.W  (A0),D0     ; copies data from A0 to D0
@@ -248,7 +245,7 @@ OPCODES:
     JMP     S1100       ; for MULS,AND
     JMP     S1101       ; for ADD
     JMP     S1110       ; for SHIFT (LSL,ASR)
-    JMP     SS
+    JMP     SS          ; for INVALID
     
 ; for MOVE
 S00:
@@ -258,13 +255,13 @@ S00:
 ; for NOT,JSR,RTS,NOP,MOVEM,LEA
 S0100:
     CLR     D4          ; clears data register D4
-    MOVE.L  A0,D4       ; copies from D7 to D4
+    MOVE.L  A0,D4       ; copies from A0 to D4
     CMP.L   #%0100111001110101,D4 ; compares to RTS
     BEQ     OP_RTS      ; redirects to RTS
     CMP.L   #%0100111001110001,D4 ; compares to NOP
     BEQ     OP_NOP      ; redirects to NOP
-    AND     #%0000111100000000,D4
-    LSR.L   #8,D4
+    AND     #%0000111100000000,D4 ; gets 4 bits
+    LSR.L   #8,D4       ; shifts right 8 bits
     CMP.W   #%1110,D4   ; compares to JSR unique bits
     BEQ     OP_JSR      ; redirects to JSR
     CMP.W   #%0110,D4   ; compares to NOT unique bits
@@ -287,10 +284,10 @@ S1001:
 ; for MULS,AND
 S1100:
     CLR     D4          ; clears data register D4
-    MOVE.L  A0,D4       ; copies from D7 to D4
-    AND.L   #%0000001111000000,D4
-    LSR.L   #6,D4
-    CMP.W   #%1111,D4
+    MOVE.L  A0,D4       ; copies from A0 to D4
+    AND.L   #%0000001111000000,D4 ; gets 4 bits
+    LSR.L   #6,D4       ; shifts right 6 bits
+    CMP.W   #%1111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
     CMP.W   #%0111,D4   ; compares with MULS unique bits
     BEQ     OP_MULS     ; redirects to MULS
@@ -405,14 +402,6 @@ EADD    DS.B    8       ; ending address storage
 * http://neo.dmcs.pl/pn/asembler_68000/asm.html
 * http://goldencrystal.free.fr/M68kOpcodes-v2.3.pdf
 * https://stackoverflow.com/questions/48017/what-is-a-jump-table
-
-
-
-
-
-
-
-
 
 *~Font name~Courier New~
 *~Font size~10~
